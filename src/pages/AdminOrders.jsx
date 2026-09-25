@@ -2,9 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
+import {
+  msgOrderPlaced, msgOrderConfirmed, msgOrderPacked,
+  msgOutForDelivery, msgOrderDelivered, msgOrderCancelled,
+  msgOwnerNewOrder, openWhatsApp,
+} from '../utils/whatsappTemplates';
 
 const STATUS_FLOW = ['Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered'];
 const ALL_STATUSES = [...STATUS_FLOW, 'Cancelled'];
+const OWNER_PHONE = '9168843668'; // change to your brother's real number
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -71,6 +77,21 @@ export default function AdminOrders() {
     fetchOrders();
   }
 
+  // ---------- WHATSAPP HELPERS ----------
+  const handleSendToCustomer = (order, templateFn, label) => {
+    const orderItems = items[order.id] || [];
+    const msg = templateFn(order, orderItems);
+    openWhatsApp(order.customer_phone, msg);
+    toast.success(`Opening WhatsApp for ${label} → ${order.customer_name}`);
+  };
+
+  const handleNotifyOwner = (order) => {
+    const orderItems = items[order.id] || [];
+    const msg = msgOwnerNewOrder(order, orderItems);
+    openWhatsApp(OWNER_PHONE, msg);
+    toast.success('Opening WhatsApp to notify owner');
+  };
+
   const filteredOrders = filter === 'All' ? orders : orders.filter((o) => o.status === filter);
 
   function getNextStatus(currentStatus) {
@@ -85,11 +106,15 @@ export default function AdminOrders() {
         <h2>🌿 Admin</h2>
         <nav>
           <Link to="/admin/dashboard">📊 Dashboard</Link>
+          <Link to="/admin/analytics">📈 Analytics</Link>
           <Link to="/admin/orders" className="active">📦 Orders</Link>
           <Link to="/admin/products">🍌 Products</Link>
           <Link to="/">🏠 View Site</Link>
         </nav>
-        <button className="logout-btn" onClick={async () => { await supabase.auth.signOut(); navigate('/admin'); }}>
+        <button
+          className="logout-btn"
+          onClick={async () => { await supabase.auth.signOut(); navigate('/admin'); }}
+        >
           Logout
         </button>
       </aside>
@@ -163,6 +188,77 @@ export default function AdminOrders() {
                         </li>
                       ))}
                     </ul>
+
+                    {/* ---------- WHATSAPP NOTIFICATIONS ---------- */}
+                    <div className="wa-section">
+                      <h4>📱 Send WhatsApp Notification</h4>
+                      <p className="wa-help">
+                        Click a button to open WhatsApp with the message pre-filled. Just tap send!
+                      </p>
+
+                      <div className="wa-grid">
+                        <button
+                          className={`wa-btn ${o.status === 'Pending' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderPlaced, 'Order Placed')}
+                        >
+                          <span className="wa-icon">🌿</span>
+                          <span className="wa-label">Order Placed</span>
+                          {o.status === 'Pending' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Confirmed' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderConfirmed, 'Confirmed')}
+                        >
+                          <span className="wa-icon">✅</span>
+                          <span className="wa-label">Confirmed</span>
+                          {o.status === 'Confirmed' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Packed' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderPacked, 'Packed')}
+                        >
+                          <span className="wa-icon">📦</span>
+                          <span className="wa-label">Packed</span>
+                          {o.status === 'Packed' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Out for Delivery' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOutForDelivery, 'Out for Delivery')}
+                        >
+                          <span className="wa-icon">🚚</span>
+                          <span className="wa-label">Out for Delivery</span>
+                          {o.status === 'Out for Delivery' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Delivered' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderDelivered, 'Delivered')}
+                        >
+                          <span className="wa-icon">🎉</span>
+                          <span className="wa-label">Delivered</span>
+                          {o.status === 'Delivered' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Cancelled' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderCancelled, 'Cancelled')}
+                        >
+                          <span className="wa-icon">❌</span>
+                          <span className="wa-label">Cancelled</span>
+                          {o.status === 'Cancelled' && <span className="wa-current">current</span>}
+                        </button>
+                      </div>
+
+                      <button
+                        className="wa-owner-btn"
+                        onClick={() => handleNotifyOwner(o)}
+                      >
+                        🔔 Notify Owner (New Order Alert)
+                      </button>
+                    </div>
 
                     <h4>Status Timeline</h4>
                     <div className="status-timeline">
