@@ -3,19 +3,27 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 
+const EMPTY_FORM = {
+  name: '',
+  price: '',
+  stock: '',
+  low_stock_threshold: 10,
+  weight: '250g',
+  category: 'Banana Chips',
+  image_url: '',
+  description: '',
+};
+
+const CATEGORIES = ['Banana Chips', 'Jackfruit Chips', 'Combo Packs'];
+const WEIGHTS = ['100g', '250g', '500g', '1kg'];
+
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({
-    name: '',
-    price: '',
-    stock: '',
-    low_stock_threshold: '',
-    weight: '',
-    category: 'Banana Chips',
-    image_url: '',
-    description: '',
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +38,7 @@ export default function AdminProducts() {
     setProducts(data || []);
   }
 
+  // ---------- EDIT EXISTING ----------
   function startEdit(product) {
     setEditing(product.id);
     setForm({
@@ -60,7 +69,6 @@ export default function AdminProducts() {
       toast.error('Failed to save: ' + error.message);
       return;
     }
-
     toast.success('Product updated');
     setEditing(null);
     fetchProducts();
@@ -72,6 +80,56 @@ export default function AdminProducts() {
       .update({ is_available: !product.is_available })
       .eq('id', product.id);
     toast.success(product.is_available ? 'Product hidden' : 'Product shown');
+    fetchProducts();
+  }
+
+  // ---------- ADD NEW PRODUCT ----------
+  function openAddModal() {
+    setAddForm(EMPTY_FORM);
+    setShowAddModal(true);
+  }
+
+  function closeAddModal() {
+    if (saving) return;
+    setShowAddModal(false);
+    setAddForm(EMPTY_FORM);
+  }
+
+  async function handleAddProduct(e) {
+    e.preventDefault();
+
+    // Validation
+    if (!addForm.name.trim()) return toast.error('Product name is required');
+    if (!addForm.price || Number(addForm.price) <= 0)
+      return toast.error('Enter a valid price');
+    if (!addForm.stock || Number(addForm.stock) < 0)
+      return toast.error('Enter a valid stock quantity');
+    if (!addForm.image_url.trim()) return toast.error('Image URL is required');
+
+    setSaving(true);
+
+    const { error } = await supabase.from('products').insert({
+      name: addForm.name.trim(),
+      category: addForm.category,
+      weight: addForm.weight,
+      price: Number(addForm.price),
+      stock: Number(addForm.stock),
+      low_stock_threshold: Number(addForm.low_stock_threshold),
+      image_url: addForm.image_url.trim(),
+      description: addForm.description.trim(),
+      is_available: true,
+    });
+
+    setSaving(false);
+
+    if (error) {
+      toast.error('Failed to add product: ' + error.message);
+      return;
+    }
+
+    toast.success(`${addForm.name} added successfully! 🎉`);
+    setShowAddModal(false);
+    setAddForm(EMPTY_FORM);
     fetchProducts();
   }
 
@@ -104,7 +162,19 @@ export default function AdminProducts() {
       </aside>
 
       <main className="admin-main">
-        <h1>Products</h1>
+        {/* Header with Add button */}
+        <div className="admin-main-header">
+          <div>
+            <h1>Products</h1>
+            <p className="admin-subtext">
+              {products.length} {products.length === 1 ? 'product' : 'products'} in your catalog
+            </p>
+          </div>
+          <button className="add-product-btn" onClick={openAddModal}>
+            <span className="plus-icon">+</span> Add Product
+          </button>
+        </div>
+
         <div className="admin-products-grid">
           {products.map((p) => {
             const stockStatus = getStockStatus(p);
@@ -127,7 +197,7 @@ export default function AdminProducts() {
                 </div>
 
                 <h3>{p.name}</h3>
-                <p className="product-weight">{p.weight}</p>
+                <p className="product-weight">{p.weight} · {p.category}</p>
 
                 {editing === p.id ? (
                   <div className="edit-form">
@@ -167,9 +237,7 @@ export default function AdminProducts() {
                     />
 
                     <div className="edit-actions">
-                      <button className="save-btn" onClick={saveEdit}>
-                        Save
-                      </button>
+                      <button className="save-btn" onClick={saveEdit}>Save</button>
                       <button className="cancel-btn" onClick={() => setEditing(null)}>
                         Cancel
                       </button>
@@ -197,8 +265,165 @@ export default function AdminProducts() {
               </div>
             );
           })}
+
+          {products.length === 0 && (
+            <div className="empty-products">
+              <div className="empty-icon">📦</div>
+              <h3>No products yet</h3>
+              <p>Click "+ Add Product" to create your first product.</p>
+              <button className="add-product-btn" onClick={openAddModal}>
+                <span className="plus-icon">+</span> Add Your First Product
+              </button>
+            </div>
+          )}
         </div>
       </main>
+
+      {/* ---------- ADD PRODUCT MODAL ---------- */}
+      {showAddModal && (
+        <div className="modal-backdrop" onClick={closeAddModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2>Add New Product</h2>
+                <p className="modal-subtitle">Fill in the details below to add a product to your catalog.</p>
+              </div>
+              <button className="modal-close" onClick={closeAddModal}>✕</button>
+            </div>
+
+            <form onSubmit={handleAddProduct} className="modal-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Product Name *</label>
+                  <input
+                    type="text"
+                    value={addForm.name}
+                    onChange={(e) => setAddForm({ ...addForm, name: e.target.value })}
+                    placeholder="e.g. Kela Chips"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Category *</label>
+                  <select
+                    value={addForm.category}
+                    onChange={(e) => setAddForm({ ...addForm, category: e.target.value })}
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Weight *</label>
+                  <select
+                    value={addForm.weight}
+                    onChange={(e) => setAddForm({ ...addForm, weight: e.target.value })}
+                  >
+                    {WEIGHTS.map((w) => (
+                      <option key={w} value={w}>{w}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Price (₹) *</label>
+                  <input
+                    type="number"
+                    value={addForm.price}
+                    onChange={(e) => setAddForm({ ...addForm, price: e.target.value })}
+                    placeholder="e.g. 80"
+                    min="0"
+                    step="1"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Stock Quantity *</label>
+                  <input
+                    type="number"
+                    value={addForm.stock}
+                    onChange={(e) => setAddForm({ ...addForm, stock: e.target.value })}
+                    placeholder="e.g. 50"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Low Stock Alert At</label>
+                  <input
+                    type="number"
+                    value={addForm.low_stock_threshold}
+                    onChange={(e) =>
+                      setAddForm({ ...addForm, low_stock_threshold: e.target.value })
+                    }
+                    placeholder="e.g. 10"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Image URL *</label>
+                <input
+                  type="url"
+                  value={addForm.image_url}
+                  onChange={(e) => setAddForm({ ...addForm, image_url: e.target.value })}
+                  placeholder="https://your-project.supabase.co/storage/v1/object/public/product-images/..."
+                  required
+                />
+                <small className="form-hint">
+                  Paste the public URL from your Supabase storage bucket.
+                </small>
+              </div>
+
+              {addForm.image_url && (
+                <div className="image-preview">
+                  <img
+                    src={addForm.image_url}
+                    alt="Preview"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                    onLoad={(e) => {
+                      e.target.style.display = 'block';
+                    }}
+                  />
+                </div>
+              )}
+
+              <div className="form-group">
+                <label>Description</label>
+                <textarea
+                  value={addForm.description}
+                  onChange={(e) => setAddForm({ ...addForm, description: e.target.value })}
+                  placeholder="Crispy, golden banana chips fried in fresh oil..."
+                  rows="3"
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="modal-cancel-btn"
+                  onClick={closeAddModal}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="modal-save-btn" disabled={saving}>
+                  {saving ? 'Adding...' : 'Add Product'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
