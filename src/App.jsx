@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Products from './pages/Products';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import TrackOrder from './pages/TrackOrder';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOrders from './pages/AdminOrders';
@@ -20,6 +21,7 @@ function App() {
         <Routes>
           <Route path="/" element={<><Navbar /><Home /></>} />
           <Route path="/products" element={<><Navbar /><Products /></>} />
+          <Route path="/track" element={<><Navbar /><TrackOrder /></>} />
           <Route path="/cart" element={<><Navbar /><Cart /></>} />
           <Route path="/checkout" element={<><Navbar /><Checkout /></>} />
           <Route path="/admin" element={<AdminLogin />} />
