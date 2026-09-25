@@ -5,22 +5,52 @@ import useFlyToCart from '../hooks/useFlyToCart';
 import SkeletonCard from '../components/SkeletonCard';
 import RevealCard from '../components/RevealCard';
 import BrandMarquee from '../components/BrandMarquee';
+import StarRating from '../components/StarRating';
+import ReviewsModal from '../components/ReviewsModal';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
+  const [ratings, setRatings] = useState({});
   const [filter, setFilter] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [reviewProduct, setReviewProduct] = useState(null);
   const { addToCart } = useCart();
   const flyToCart = useFlyToCart();
 
   useEffect(() => {
-    async function fetchProducts() {
-      const { data } = await supabase.from('products').select('*').eq('is_available', true);
-      setProducts(data || []);
-      setTimeout(() => setLoading(false), 800);
-    }
-    fetchProducts();
+    fetchAll();
   }, []);
+
+  async function fetchAll() {
+    const { data: prods } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_available', true);
+    setProducts(prods || []);
+
+    const { data: revs } = await supabase
+      .from('reviews')
+      .select('product_id, rating');
+
+    if (revs) {
+      const agg = {};
+      revs.forEach((r) => {
+        if (!agg[r.product_id]) agg[r.product_id] = { sum: 0, count: 0 };
+        agg[r.product_id].sum += r.rating;
+        agg[r.product_id].count += 1;
+      });
+      const out = {};
+      Object.keys(agg).forEach((id) => {
+        out[id] = {
+          avg: agg[id].sum / agg[id].count,
+          count: agg[id].count,
+        };
+      });
+      setRatings(out);
+    }
+
+    setTimeout(() => setLoading(false), 800);
+  }
 
   const filtered = filter === 'All' ? products : products.filter((p) => p.category === filter);
 
@@ -33,10 +63,7 @@ export default function Products() {
 
   return (
     <>
-      {/* ---------- FULL-WIDTH MARQUEE ---------- */}
       <BrandMarquee />
-
-      {/* ---------- CONTAINERED GRID ---------- */}
       <div className="app-container">
         <h1 className="page-title">All Products</h1>
         <div className="filters">
@@ -56,6 +83,7 @@ export default function Products() {
             : filtered.map((product, index) => {
                 const outOfStock = product.stock === 0;
                 const lowStock = !outOfStock && product.stock <= (product.low_stock_threshold || 10);
+                const rating = ratings[product.id];
                 return (
                   <RevealCard key={product.id} delay={(index % 4) * 100}>
                     <div className={`product-card ${outOfStock ? 'is-out' : ''}`}>
@@ -67,7 +95,21 @@ export default function Products() {
                       <div className="product-info">
                         <h3>{product.name}</h3>
                         <p className="product-weight">{product.weight}</p>
+
+                        <button
+                          className="product-rating-btn"
+                          onClick={() => setReviewProduct(product)}
+                        >
+                          <StarRating
+                            value={rating?.avg || 0}
+                            size="0.85rem"
+                            showNumber
+                            total={rating?.count || 0}
+                          />
+                        </button>
+
                         <p className="product-price">₹{product.price}</p>
+
                         {outOfStock ? (
                           <button className="add-to-cart-btn disabled" disabled>Out of Stock</button>
                         ) : (
@@ -82,6 +124,10 @@ export default function Products() {
               })}
         </div>
       </div>
+
+      {reviewProduct && (
+        <ReviewsModal product={reviewProduct} onClose={() => setReviewProduct(null)} />
+      )}
     </>
   );
 }
