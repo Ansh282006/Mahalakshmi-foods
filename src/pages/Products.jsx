@@ -33,7 +33,10 @@ export default function Products() {
 
   return (
     <>
+      {/* ---------- FULL-WIDTH MARQUEE ---------- */}
       <BrandMarquee />
+
+      {/* ---------- CONTAINERED GRID ---------- */}
       <div className="app-container">
         <h1 className="page-title">All Products</h1>
         <div className="filters">
