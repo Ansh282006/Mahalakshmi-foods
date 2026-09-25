@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import PincodeChecker from '../components/PincodeChecker';
 
 export default function Checkout() {
   const { cart, getTotal, clearCart } = useCart();
@@ -11,7 +12,9 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', phone: '', address: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [pincodeServiceable, setPincodeServiceable] = useState(null);
 
+  // Auto-fill from logged-in user
   useEffect(() => {
     if (user) {
       setForm((prev) => ({
@@ -24,6 +27,12 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (pincodeServiceable === false) {
+      toast.error('Cannot place order — delivery not available at your pincode');
+      return;
+    }
+
     setSubmitting(true);
     const toastId = toast.loading('Placing your order...');
 
@@ -76,12 +85,44 @@ export default function Checkout() {
     <div className="app-container">
       <h1 className="page-title">Checkout</h1>
       <div className="checkout-grid">
+        {/* Pincode Checker */}
+        <PincodeChecker
+          compact
+          onServiceable={(isServiceable) => setPincodeServiceable(isServiceable)}
+        />
+
+        {/* Guest Notice */}
         {!user && (
           <div className="guest-notice">
             Checking out as a <strong>guest</strong>.{' '}
             <a href="/login">Sign in</a> to save your details for next time.
           </div>
         )}
+
+        {/* Order Summary */}
+        <div className="checkout-summary-card">
+          <h3>Order Summary</h3>
+          <div className="checkout-summary-list">
+            {cart.map((item) => (
+              <div key={item.id} className="checkout-summary-item">
+                <img src={item.image_url} alt={item.name} />
+                <div className="checkout-summary-info">
+                  <strong>{item.name}</strong>
+                  <span>{item.weight} × {item.quantity}</span>
+                </div>
+                <span className="checkout-summary-price">
+                  ₹{(item.price * item.quantity).toFixed(0)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="checkout-summary-total">
+            <span>Total</span>
+            <strong>₹{getTotal().toFixed(2)}</strong>
+          </div>
+        </div>
+
+        {/* Checkout Form */}
         <form onSubmit={handleSubmit} className="checkout-form">
           <label>Full Name</label>
           <input
@@ -90,6 +131,7 @@ export default function Checkout() {
             placeholder="e.g. Ansh Patil"
             required
           />
+
           <label>Phone Number</label>
           <input
             value={form.phone}
@@ -99,6 +141,7 @@ export default function Checkout() {
             title="Please enter a valid 10-digit phone number"
             required
           />
+
           <label>Delivery Address</label>
           <textarea
             value={form.address}
@@ -106,9 +149,20 @@ export default function Checkout() {
             placeholder="House / Street / Village / Taluka / District / Pincode"
             required
           />
-          <button type="submit" className="checkout-btn" disabled={submitting}>
-            {submitting ? 'Placing Order...' : `Place Order (₹${getTotal().toFixed(2)})`}
+
+          <button
+            type="submit"
+            className="checkout-btn"
+            disabled={submitting || pincodeServiceable === false}
+          >
+            {submitting
+              ? 'Placing Order...'
+              : `Place Order (₹${getTotal().toFixed(2)})`}
           </button>
+
+          <p className="checkout-cod-note">
+            💵 Cash on Delivery · No online payment required
+          </p>
         </form>
       </div>
     </div>

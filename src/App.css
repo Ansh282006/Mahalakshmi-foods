@@ -3147,3 +3147,470 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
     width: 100%;
   }
 }
+/* ============================================
+   PINCODE CHECKER
+   ============================================ */
+.pincode-section {
+  max-width: 620px;
+  margin: 0 auto 40px;
+  padding: 0 20px;
+}
+
+.pincode-checker {
+  background: white;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eef1f4;
+}
+
+.pincode-checker.compact {
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: #f8fdf9;
+  border-color: #c8e6c9;
+}
+
+.pincode-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.pincode-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.pincode-header h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  color: #1a2332;
+  margin-bottom: 2px;
+}
+
+.pincode-subtitle {
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.pincode-form {
+  display: flex;
+  gap: 8px;
+}
+
+.pincode-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #1a2332;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.pincode-input::placeholder {
+  color: #999;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+
+.pincode-input:focus {
+  outline: none;
+  border-color: #2E7D32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.pincode-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+  white-space: nowrap;
+}
+
+.pincode-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.4);
+}
+
+.pincode-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pincode-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  animation: pincodeResultIn 0.3s ease;
+}
+
+@keyframes pincodeResultIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pincode-result.success {
+  background: #e8f5e9;
+  border-left: 4px solid #2E7D32;
+}
+
+.pincode-result.fail {
+  background: #ffebee;
+  border-left: 4px solid #C62828;
+}
+
+.pincode-result.warn {
+  background: #fff8e1;
+  border-left: 4px solid #F9A825;
+}
+
+.pincode-result .result-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pincode-result > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pincode-result strong {
+  font-size: 0.9rem;
+  color: #1a2332;
+  font-weight: 700;
+}
+
+.pincode-result span:not(.result-icon) {
+  font-size: 0.78rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .pincode-checker { padding: 18px; }
+  .pincode-form { flex-direction: column; }
+  .pincode-btn { width: 100%; }
+}
+/* ============================================
+   ETA BANNER
+   ============================================ */
+.eta-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 28px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-bottom: 1px solid #90caf9;
+  animation: etaIn 0.4s ease;
+}
+
+.delivered-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 28px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-bottom: 1px solid #a5d6a7;
+  animation: etaIn 0.4s ease;
+}
+
+@keyframes etaIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.eta-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.eta-banner > div,
+.delivered-banner > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eta-banner strong,
+.delivered-banner strong {
+  font-size: 0.85rem;
+  color: #1a2332;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.eta-banner span:not(.eta-icon) {
+  font-size: 0.95rem;
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.delivered-banner span:not(.eta-icon) {
+  font-size: 0.88rem;
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+/* ============================================
+   DELIVERY PARTNER (Track Order)
+   ============================================ */
+.delivery-partner-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 28px;
+  background: #fafbfc;
+  border-bottom: 1px solid #eef1f4;
+  transition: background 0.3s ease;
+}
+
+.delivery-partner-card.active {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  animation: partnerPulse 2s ease-in-out infinite;
+}
+
+@keyframes partnerPulse {
+  0%, 100% { box-shadow: inset 4px 0 0 #F9A825; }
+  50%      { box-shadow: inset 4px 0 0 #ef6c00; }
+}
+
+.dp-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F9A825 0%, #ef6c00 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(249, 168, 37, 0.35);
+}
+
+.dp-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dp-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dp-info strong {
+  font-size: 0.95rem;
+  color: #1a2332;
+}
+
+.dp-phone {
+  font-size: 0.82rem;
+  color: #666;
+}
+
+.dp-call-btn {
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+  white-space: nowrap;
+}
+
+.dp-call-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.4);
+}
+
+/* ============================================
+   DELIVERY PARTNER (Admin)
+   ============================================ */
+.delivery-partner-section {
+  background: #f0f9f1;
+  border: 1px solid #c8e6c9;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+
+.delivery-partner-section h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #1B5E20;
+  margin-bottom: 12px;
+}
+
+.dp-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.dp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dp-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #558b2f;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.dp-field input {
+  padding: 9px 12px;
+  border: 1px solid #c8e6c9;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.dp-field input:focus {
+  outline: none;
+  border-color: #2E7D32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+@media (max-width: 768px) {
+  .dp-form-row { grid-template-columns: 1fr; }
+  .delivery-partner-card { padding: 14px 20px; }
+  .dp-call-btn { padding: 8px 14px; font-size: 0.8rem; }
+  .eta-banner, .delivered-banner { padding: 14px 20px; }
+}
+/* ============================================
+   CHECKOUT SUMMARY CARD
+   ============================================ */
+.checkout-summary-card {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+  border: 1px solid #eef1f4;
+}
+
+.checkout-summary-card h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.05rem;
+  color: #1a2332;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eef1f4;
+}
+
+.checkout-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.checkout-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checkout-summary-item img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.checkout-summary-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.checkout-summary-info strong {
+  font-size: 0.9rem;
+  color: #1a2332;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkout-summary-info span {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.checkout-summary-price {
+  font-weight: 700;
+  color: #C62828;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.checkout-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px dashed #e0e0e0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.checkout-summary-total strong {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.4rem;
+  color: #C62828;
+  font-weight: 700;
+}
+
+.checkout-cod-note {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #2E7D32;
+  background: #e8f5e9;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 12px;
+  font-weight: 600;
+}

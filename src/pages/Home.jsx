@@ -8,6 +8,7 @@ import RevealCard from '../components/RevealCard';
 import BrandMarquee from '../components/BrandMarquee';
 import StarRating from '../components/StarRating';
 import ReviewsModal from '../components/ReviewsModal';
+import PincodeChecker from '../components/PincodeChecker';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -85,6 +86,9 @@ export default function Home() {
       </header>
 
       <BrandMarquee />
+      <div className="pincode-section">
+  <PincodeChecker />
+</div>
 
       <div className="app-container">
         <section className="products-section">

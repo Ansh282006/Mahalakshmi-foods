@@ -38,7 +38,7 @@ export default function TrackOrder() {
     setSearched(true);
   }
 
-  function getCurrentStepIndex(status) {
+  function getStepIndex(status) {
     return STATUS_STEPS.indexOf(status);
   }
 
@@ -52,15 +52,27 @@ export default function TrackOrder() {
   }
 
   function shareOnWhatsApp(order) {
-    const message = `🌿 *Mahalaxmi Krushi Prakriya Udyog*\n\n📋 Order Code: *${order.order_code}*\n📦 Status: ${order.status}\n💰 Total: ₹${order.total_amount}\n📍 Delivery to: ${order.customer_name}\n\nTrack anytime at our website. 🙏`;
-    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    const message = `🌿 *Mahalaxmi Krushi Prakriya Udyog*\n\n📋 Order: *${order.order_code}*\n📦 Status: ${order.status}\n💰 Total: ₹${order.total_amount}\n\nTrack anytime at our website. 🙏`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+  }
+
+  function callPartner(phone) {
+    window.location.href = `tel:${phone}`;
+  }
+
+  function formatDeliveryDate(dateStr) {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
   }
 
   return (
     <div className="track-wrapper">
       <div className="app-container">
-        {/* Header */}
         <div className="track-header">
           <h1 className="page-title">Track Your Order</h1>
           <p className="track-subtitle">
@@ -68,7 +80,6 @@ export default function TrackOrder() {
           </p>
         </div>
 
-        {/* Search Form */}
         <form onSubmit={handleSearch} className="track-form">
           <input
             type="text"
@@ -82,7 +93,6 @@ export default function TrackOrder() {
           </button>
         </form>
 
-        {/* Loading */}
         {loading && (
           <div className="track-loading">
             <div className="track-spinner"></div>
@@ -90,28 +100,25 @@ export default function TrackOrder() {
           </div>
         )}
 
-        {/* Empty */}
         {!loading && searched && orders.length === 0 && (
           <div className="track-empty">
             <div className="empty-icon">📦</div>
             <h3>No orders found</h3>
-            <p>
-              Double-check your order code or phone number. If you just placed the order, wait a minute and try again.
-            </p>
+            <p>Double-check your order code or phone number.</p>
             <Link to="/products" className="track-shop-link">Browse Products →</Link>
           </div>
         )}
 
-        {/* Results */}
         {!loading && orders.length > 0 && (
           <div className="track-results">
             {orders.map((order) => {
-              const stepIdx = getCurrentStepIndex(order.status);
+              const stepIdx = getStepIndex(order.status);
               const cancelled = isCancelled(order);
+              const hasDeliveryPartner = !!order.delivery_partner_name;
+              const isOutForDelivery = order.status === 'Out for Delivery';
 
               return (
                 <div key={order.id} className="track-card">
-                  {/* Header */}
                   <div className="track-card-header">
                     <div className="track-header-left">
                       <div className="track-code-row">
@@ -137,14 +144,39 @@ export default function TrackOrder() {
                     </span>
                   </div>
 
-                  {/* Cancelled */}
                   {cancelled && (
                     <div className="cancelled-notice">
-                      ⚠️ This order was cancelled. If this is unexpected, please contact us.
+                      ⚠️ This order was cancelled. If unexpected, please contact us.
                     </div>
                   )}
 
-                  {/* Progress Timeline */}
+                  {/* Estimated Delivery Banner */}
+                  {!cancelled && order.estimated_delivery && order.status !== 'Delivered' && (
+                    <div className="eta-banner">
+                      <span className="eta-icon">📅</span>
+                      <div>
+                        <strong>Estimated Delivery</strong>
+                        <span>{formatDeliveryDate(order.estimated_delivery)}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Delivered Banner */}
+                  {order.status === 'Delivered' && (
+                    <div className="delivered-banner">
+                      <span className="eta-icon">🎉</span>
+                      <div>
+                        <strong>Delivered</strong>
+                        <span>
+                          {order.delivered_at
+                            ? new Date(order.delivered_at).toLocaleString('en-IN')
+                            : 'Successfully delivered'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Progress timeline */}
                   {!cancelled && (
                     <div className="track-timeline">
                       <div className="timeline-track">
@@ -158,22 +190,41 @@ export default function TrackOrder() {
                               key={step}
                               className={`timeline-step ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''} ${isPending ? 'pending' : ''}`}
                             >
-                              {/* Connecting line (before this step) */}
                               {idx > 0 && (
                                 <div className={`timeline-connector ${isCompleted || isCurrent ? 'active' : ''}`}></div>
                               )}
-
-                              {/* Circle */}
                               <div className="timeline-circle">
                                 {isCompleted ? '✓' : isCurrent ? '●' : idx + 1}
                               </div>
-
-                              {/* Label */}
                               <div className="timeline-label">{step}</div>
                             </div>
                           );
                         })}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Delivery Partner Card */}
+                  {hasDeliveryPartner && !cancelled && (
+                    <div className={`delivery-partner-card ${isOutForDelivery ? 'active' : ''}`}>
+                      <div className="dp-avatar">
+                        {(order.delivery_partner_name || 'D').charAt(0).toUpperCase()}
+                      </div>
+                      <div className="dp-info">
+                        <span className="dp-label">Your Delivery Partner</span>
+                        <strong>{order.delivery_partner_name}</strong>
+                        {order.delivery_partner_phone && (
+                          <span className="dp-phone">{order.delivery_partner_phone}</span>
+                        )}
+                      </div>
+                      {order.delivery_partner_phone && isOutForDelivery && (
+                        <button
+                          className="dp-call-btn"
+                          onClick={() => callPartner(order.delivery_partner_phone)}
+                        >
+                          📞 Call
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -209,11 +260,8 @@ export default function TrackOrder() {
                               <strong>{entry.status}</strong>
                               <span className="history-time">
                                 {new Date(entry.timestamp).toLocaleString('en-IN', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
+                                  day: 'numeric', month: 'short', year: 'numeric',
+                                  hour: '2-digit', minute: '2-digit',
                                 })}
                               </span>
                             </div>
@@ -223,7 +271,6 @@ export default function TrackOrder() {
                     </div>
                   )}
 
-                  {/* Actions */}
                   <div className="track-card-actions">
                     <button className="track-wa-btn" onClick={() => shareOnWhatsApp(order)}>
                       📱 Share on WhatsApp

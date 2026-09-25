@@ -2,9 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
+import {
+  msgOrderPlaced, msgOrderConfirmed, msgOrderPacked,
+  msgOutForDelivery, msgOrderDelivered, msgOrderCancelled,
+  msgOwnerNewOrder, openWhatsApp,
+} from '../utils/whatsappTemplates';
 
 const STATUS_FLOW = ['Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered'];
 const ALL_STATUSES = [...STATUS_FLOW, 'Cancelled'];
+const OWNER_PHONE = '7774982725'; // change to your brother's real number
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -34,7 +40,7 @@ export default function AdminOrders() {
   }
 
   async function loadItems(orderId) {
-    if (items[orderId]) return; // already loaded
+    if (items[orderId]) return;
     const { data } = await supabase
       .from('order_items')
       .select('*, products(name, weight, image_url)')
@@ -54,19 +60,17 @@ export default function AdminOrders() {
   async function updateStatus(order, newStatus) {
     if (order.status === newStatus) return;
 
-    const newEntry = {
-      status: newStatus,
-      timestamp: new Date().toISOString(),
-    };
-
+    const newEntry = { status: newStatus, timestamp: new Date().toISOString() };
     const updatedHistory = [...(order.status_history || []), newEntry];
+
+    const updates = { status: newStatus, status_history: updatedHistory };
+    if (newStatus === 'Delivered') {
+      updates.delivered_at = new Date().toISOString();
+    }
 
     const { error } = await supabase
       .from('orders')
-      .update({
-        status: newStatus,
-        status_history: updatedHistory,
-      })
+      .update(updates)
       .eq('id', order.id);
 
     if (error) {
@@ -78,11 +82,38 @@ export default function AdminOrders() {
     fetchOrders();
   }
 
-  // Filter orders by status
-  const filteredOrders =
-    filter === 'All' ? orders : orders.filter((o) => o.status === filter);
+  // ---------- WHATSAPP HELPERS ----------
+  const handleSendToCustomer = (order, templateFn, label) => {
+    const orderItems = items[order.id] || [];
+    const msg = templateFn(order, orderItems);
+    openWhatsApp(order.customer_phone, msg);
+    toast.success(`Opening WhatsApp for ${label} → ${order.customer_name}`);
+  };
 
-  // Get next status in the flow
+  const handleNotifyOwner = (order) => {
+    const orderItems = items[order.id] || [];
+    const msg = msgOwnerNewOrder(order, orderItems);
+    openWhatsApp(OWNER_PHONE, msg);
+    toast.success('Opening WhatsApp to notify owner');
+  };
+
+  // ---------- DELIVERY PARTNER UPDATE ----------
+  async function updateDeliveryField(orderId, field, value) {
+    const { error } = await supabase
+      .from('orders')
+      .update({ [field]: value || null })
+      .eq('id', orderId);
+
+    if (error) {
+      toast.error('Failed to update: ' + error.message);
+      return;
+    }
+    toast.success('Delivery details updated');
+    fetchOrders();
+  }
+
+  const filteredOrders = filter === 'All' ? orders : orders.filter((o) => o.status === filter);
+
   function getNextStatus(currentStatus) {
     const idx = STATUS_FLOW.indexOf(currentStatus);
     if (idx === -1 || idx === STATUS_FLOW.length - 1) return null;
@@ -95,6 +126,7 @@ export default function AdminOrders() {
         <h2>🌿 Admin</h2>
         <nav>
           <Link to="/admin/dashboard">📊 Dashboard</Link>
+          <Link to="/admin/analytics">📈 Analytics</Link>
           <Link to="/admin/orders" className="active">📦 Orders</Link>
           <Link to="/admin/products">🍌 Products</Link>
           <Link to="/">🏠 View Site</Link>
@@ -113,7 +145,6 @@ export default function AdminOrders() {
       <main className="admin-main">
         <h1>Orders</h1>
 
-        {/* Filter tabs */}
         <div className="order-filters">
           {['All', ...ALL_STATUSES].map((s) => {
             const count = s === 'All' ? orders.length : orders.filter((o) => o.status === s).length;
@@ -153,6 +184,7 @@ export default function AdminOrders() {
 
                 {isOpen && (
                   <div className="order-details">
+                    {/* Basic Details */}
                     <div className="detail-grid">
                       <div>
                         <label>Delivery Address</label>
@@ -164,6 +196,7 @@ export default function AdminOrders() {
                       </div>
                     </div>
 
+                    {/* Items */}
                     <h4>Order Items</h4>
                     <ul className="item-list">
                       {(items[o.id] || []).map((item) => (
@@ -181,6 +214,120 @@ export default function AdminOrders() {
                       ))}
                     </ul>
 
+                    {/* Delivery Partner Form */}
+                    <div className="delivery-partner-section">
+                      <h4>🚚 Delivery Details</h4>
+                      <div className="dp-form-row">
+                        <div className="dp-field">
+                          <label>Delivery Partner Name</label>
+                          <input
+                            type="text"
+                            defaultValue={o.delivery_partner_name || ''}
+                            placeholder="e.g. Ravi Kadam"
+                            onBlur={(e) => {
+                              const val = e.target.value.trim();
+                              if (val === (o.delivery_partner_name || '')) return;
+                              updateDeliveryField(o.id, 'delivery_partner_name', val);
+                            }}
+                          />
+                        </div>
+                        <div className="dp-field">
+                          <label>Partner Phone</label>
+                          <input
+                            type="tel"
+                            defaultValue={o.delivery_partner_phone || ''}
+                            placeholder="10-digit mobile"
+                            onBlur={(e) => {
+                              const val = e.target.value.trim();
+                              if (val === (o.delivery_partner_phone || '')) return;
+                              updateDeliveryField(o.id, 'delivery_partner_phone', val);
+                            }}
+                          />
+                        </div>
+                        <div className="dp-field">
+                          <label>Est. Delivery Date</label>
+                          <input
+                            type="date"
+                            defaultValue={o.estimated_delivery || ''}
+                            onBlur={(e) => {
+                              const val = e.target.value;
+                              if (val === (o.estimated_delivery || '')) return;
+                              updateDeliveryField(o.id, 'estimated_delivery', val);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Notifications */}
+                    <div className="wa-section">
+                      <h4>📱 Send WhatsApp Notification</h4>
+                      <p className="wa-help">
+                        Click a button to open WhatsApp with the message pre-filled. Just tap send!
+                      </p>
+
+                      <div className="wa-grid">
+                        <button
+                          className={`wa-btn ${o.status === 'Pending' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderPlaced, 'Order Placed')}
+                        >
+                          <span className="wa-icon">🌿</span>
+                          <span className="wa-label">Order Placed</span>
+                          {o.status === 'Pending' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Confirmed' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderConfirmed, 'Confirmed')}
+                        >
+                          <span className="wa-icon">✅</span>
+                          <span className="wa-label">Confirmed</span>
+                          {o.status === 'Confirmed' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Packed' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderPacked, 'Packed')}
+                        >
+                          <span className="wa-icon">📦</span>
+                          <span className="wa-label">Packed</span>
+                          {o.status === 'Packed' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Out for Delivery' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOutForDelivery, 'Out for Delivery')}
+                        >
+                          <span className="wa-icon">🚚</span>
+                          <span className="wa-label">Out for Delivery</span>
+                          {o.status === 'Out for Delivery' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Delivered' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderDelivered, 'Delivered')}
+                        >
+                          <span className="wa-icon">🎉</span>
+                          <span className="wa-label">Delivered</span>
+                          {o.status === 'Delivered' && <span className="wa-current">current</span>}
+                        </button>
+
+                        <button
+                          className={`wa-btn ${o.status === 'Cancelled' ? 'current' : ''}`}
+                          onClick={() => handleSendToCustomer(o, msgOrderCancelled, 'Cancelled')}
+                        >
+                          <span className="wa-icon">❌</span>
+                          <span className="wa-label">Cancelled</span>
+                          {o.status === 'Cancelled' && <span className="wa-current">current</span>}
+                        </button>
+                      </div>
+
+                      <button className="wa-owner-btn" onClick={() => handleNotifyOwner(o)}>
+                        🔔 Notify Owner (New Order Alert)
+                      </button>
+                    </div>
+
+                    {/* Status Timeline */}
                     <h4>Status Timeline</h4>
                     <div className="status-timeline">
                       {(o.status_history || []).map((entry, idx) => (
@@ -194,12 +341,10 @@ export default function AdminOrders() {
                       ))}
                     </div>
 
+                    {/* Actions */}
                     <div className="status-actions">
                       {nextStatus && (
-                        <button
-                          className="advance-btn"
-                          onClick={() => updateStatus(o, nextStatus)}
-                        >
+                        <button className="advance-btn" onClick={() => updateStatus(o, nextStatus)}>
                           ➜ Mark as {nextStatus}
                         </button>
                       )}
