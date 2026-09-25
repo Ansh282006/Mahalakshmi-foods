@@ -2258,3 +2258,216 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   .review-comment { margin-left: 0; }
   .star-pick { font-size: 1.8rem; }
 }
+/* ============================================
+   ANALYTICS DASHBOARD
+   ============================================ */
+.range-picker {
+  display: flex;
+  gap: 6px;
+  background: #f5f7fa;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.range-btn {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.range-btn:hover {
+  color: #2E7D32;
+  background: rgba(46, 125, 50, 0.08);
+}
+
+.range-btn.active {
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.35);
+}
+
+.analytics-loading {
+  text-align: center;
+  padding: 80px 20px;
+  color: #888;
+}
+
+/* KPI Grid */
+.analytics-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.kpi-card {
+  background: white;
+  padding: 22px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: kpiFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.kpi-card:nth-child(2) { animation-delay: 0.1s; }
+.kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.kpi-card:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes kpiFadeIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.kpi-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+}
+
+.kpi-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #1a2332;
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+
+.kpi-sub {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+/* Analytics cards */
+.analytics-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+  animation: kpiFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s backwards;
+}
+
+.analytics-card h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.05rem;
+  color: #1a2332;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analytics-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.analytics-card-header h3 { margin-bottom: 0; }
+
+.analytics-sub {
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.analytics-sub strong {
+  color: #2E7D32;
+  font-weight: 700;
+}
+
+.analytics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 0;
+}
+
+.analytics-row .analytics-card { margin-bottom: 24px; }
+
+.chart-wrapper {
+  width: 100%;
+  min-height: 200px;
+}
+
+.chart-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.rank-badge {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.revenue-cell {
+  font-weight: 700;
+  color: #2E7D32;
+}
+
+/* Recharts tweaks */
+.recharts-default-tooltip {
+  border-radius: 10px !important;
+  border: 1px solid #e0e0e0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+.recharts-text {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .analytics-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-top-bar { align-items: stretch; }
+  .range-picker {
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .range-btn { padding: 7px 12px; font-size: 0.78rem; }
+  .kpi-value { font-size: 1.5rem; }
+  .analytics-card { padding: 18px; }
+}

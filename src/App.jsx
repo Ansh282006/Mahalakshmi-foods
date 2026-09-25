@@ -16,6 +16,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import './App.css';
+import AdminAnalytics from './pages/AdminAnalytics';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/my-orders" element={<><Navbar /><MyOrders /></>} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/products" element={<AdminProducts />} />
         </Routes>
