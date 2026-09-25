@@ -55,24 +55,36 @@ export default function Navbar() {
           <Link to="/products" className={location.pathname === '/products' ? 'active' : ''}>Products</Link>
           <Link to="/track" className={location.pathname === '/track' ? 'active' : ''}>Track Order</Link>
 
+          {/* Customer: My Orders link */}
           {user && !isAdmin && (
             <Link to="/my-orders" className={location.pathname === '/my-orders' ? 'active' : ''}>
               My Orders
             </Link>
           )}
 
+          {/* Not logged in: Login link */}
           {!user && (
             <Link to="/login" className={location.pathname === '/login' ? 'active' : ''}>
               Login
             </Link>
           )}
 
+          {/* Admin: Admin Panel button */}
+          {user && isAdmin && (
+            <Link to="/admin/dashboard" className="nav-admin-btn">
+              <span className="nav-admin-icon">⚙</span>
+              Admin Panel
+            </Link>
+          )}
+
+          {/* Logged in: Sign Out button */}
           {user && (
             <button className="nav-account-btn" onClick={handleSignOut} title={user.email}>
               Sign Out
             </button>
           )}
 
+          {/* Cart */}
           <button className="cart-link" onClick={handleCartClick} aria-label="Open cart">
             🛒 Cart {getItemCount() > 0 && <span className="cart-badge">{getItemCount()}</span>}
           </button>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
@@ -16,6 +16,8 @@ const EMPTY_FORM = {
 
 const CATEGORIES = ['Banana Chips', 'Jackfruit Chips', 'Combo Packs'];
 const WEIGHTS = ['100g', '250g', '500g', '1kg'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -24,6 +26,9 @@ export default function AdminProducts() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,6 +43,80 @@ export default function AdminProducts() {
     setProducts(data || []);
   }
 
+  // ---------- IMAGE UPLOAD ----------
+  async function uploadImage(file) {
+    // Validation
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error('Please upload a JPG, PNG, or WEBP image');
+      return null;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Image must be under 5 MB');
+      return null;
+    }
+
+    setUploading(true);
+    const toastId = toast.loading('Uploading image...');
+
+    // Create a unique file name
+    const ext = file.name.split('.').pop();
+    const uniqueName = `product-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 8)}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(uniqueName, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    setUploading(false);
+
+    if (error) {
+      toast.error('Upload failed: ' + error.message, { id: toastId });
+      return null;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(data.path);
+
+    toast.success('Image uploaded!', { id: toastId });
+    return urlData.publicUrl;
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files?.[0];
+    if (file) handleFileForAdd(file);
+  }
+
+  async function handleFileForAdd(file) {
+    const url = await uploadImage(file);
+    if (url) {
+      setAddForm((prev) => ({ ...prev, image_url: url }));
+    }
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileForAdd(file);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    setDragOver(true);
+  }
+
+  function handleDragLeave(e) {
+    e.preventDefault();
+    setDragOver(false);
+  }
+
+  // ---------- EDIT EXISTING ----------
   function startEdit(product) {
     setEditing(product.id);
     setForm({
@@ -82,15 +161,17 @@ export default function AdminProducts() {
     fetchProducts();
   }
 
+  // ---------- ADD NEW PRODUCT ----------
   function openAddModal() {
     setAddForm(EMPTY_FORM);
     setShowAddModal(true);
   }
 
   function closeAddModal() {
-    if (saving) return;
+    if (saving || uploading) return;
     setShowAddModal(false);
     setAddForm(EMPTY_FORM);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   async function handleAddProduct(e) {
@@ -98,7 +179,7 @@ export default function AdminProducts() {
     if (!addForm.name.trim()) return toast.error('Product name is required');
     if (!addForm.price || Number(addForm.price) <= 0) return toast.error('Enter a valid price');
     if (!addForm.stock || Number(addForm.stock) < 0) return toast.error('Enter a valid stock');
-    if (!addForm.image_url.trim()) return toast.error('Image URL is required');
+    if (!addForm.image_url.trim()) return toast.error('Please upload or paste an image');
 
     setSaving(true);
 
@@ -146,7 +227,10 @@ export default function AdminProducts() {
         </nav>
         <button
           className="logout-btn"
-          onClick={async () => { await supabase.auth.signOut(); navigate('/admin'); }}
+          onClick={async () => {
+            await supabase.auth.signOut();
+            navigate('/admin');
+          }}
         >
           Logout
         </button>
@@ -241,7 +325,7 @@ export default function AdminProducts() {
             <div className="modal-header">
               <div>
                 <h2>Add New Product</h2>
-                <p className="modal-subtitle">Fill in the details below to add a product.</p>
+                <p className="modal-subtitle">Fill in the details and upload a product photo.</p>
               </div>
               <button className="modal-close" onClick={closeAddModal}>✕</button>
             </div>
@@ -294,21 +378,70 @@ export default function AdminProducts() {
                 </div>
               </div>
 
+              {/* ----- IMAGE UPLOAD ----- */}
               <div className="form-group">
-                <label>Image URL *</label>
-                <input type="url" value={addForm.image_url}
-                  onChange={(e) => setAddForm({ ...addForm, image_url: e.target.value })}
-                  placeholder="https://..." required />
-                <small className="form-hint">Paste the public URL from Supabase storage.</small>
-              </div>
+                <label>Product Image *</label>
 
-              {addForm.image_url && (
-                <div className="image-preview">
-                  <img src={addForm.image_url} alt="Preview"
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                    onLoad={(e) => { e.target.style.display = 'block'; }} />
+                {/* Preview */}
+                {addForm.image_url && (
+                  <div className="image-preview-lg">
+                    <img src={addForm.image_url} alt="Preview" />
+                    <button
+                      type="button"
+                      className="remove-image-btn"
+                      onClick={() => setAddForm({ ...addForm, image_url: '' })}
+                    >
+                      ✕ Remove
+                    </button>
+                  </div>
+                )}
+
+                {/* Upload area */}
+                {!addForm.image_url && (
+                  <div
+                    className={`image-upload-zone ${dragOver ? 'dragging' : ''} ${uploading ? 'uploading' : ''}`}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {uploading ? (
+                      <div className="upload-progress">
+                        <div className="upload-spinner"></div>
+                        <p>Uploading...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="upload-icon">📷</div>
+                        <p className="upload-title">
+                          Click to upload <span className="upload-divider">or</span> drag & drop
+                        </p>
+                        <p className="upload-hint">
+                          JPG, PNG, or WEBP · Max 5 MB
+                        </p>
+                      </>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleFileSelect}
+                      className="hidden-file-input"
+                    />
+                  </div>
+                )}
+
+                {/* Fallback: URL paste */}
+                <div className="url-fallback">
+                  <span>Or paste an image URL:</span>
+                  <input
+                    type="url"
+                    value={addForm.image_url}
+                    onChange={(e) => setAddForm({ ...addForm, image_url: e.target.value })}
+                    placeholder="https://..."
+                  />
                 </div>
-              )}
+              </div>
 
               <div className="form-group">
                 <label>Description</label>
@@ -318,11 +451,13 @@ export default function AdminProducts() {
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="modal-cancel-btn" onClick={closeAddModal} disabled={saving}>
+                <button type="button" className="modal-cancel-btn" onClick={closeAddModal}
+                  disabled={saving || uploading}>
                   Cancel
                 </button>
-                <button type="submit" className="modal-save-btn" disabled={saving}>
-                  {saving ? 'Adding...' : 'Add Product'}
+                <button type="submit" className="modal-save-btn"
+                  disabled={saving || uploading}>
+                  {saving ? 'Adding...' : uploading ? 'Uploading...' : 'Add Product'}
                 </button>
               </div>
             </form>
