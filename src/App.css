@@ -174,7 +174,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   margin-bottom: 0;
 }
 
-/* Decorative radial glow */
 .hero-section::before {
   content: '';
   position: absolute;
@@ -206,7 +205,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   to   { transform: translate(40px, 30px) scale(1.2); opacity: 1; }
 }
 
-/* Floating orbs */
 .hero-orb {
   position: absolute;
   border-radius: 50%;
@@ -396,6 +394,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   .marquee-item { font-size: 0.85rem; letter-spacing: 1px; }
   .marquee-track { gap: 24px; animation-duration: 22s; }
 }
+
 /* ============================================
    PRODUCTS
    ============================================ */
@@ -523,44 +522,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
 .drawer-continue-btn { width: 100%; padding: 12px; margin-top: 10px; background: transparent; color: #666; border: none; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: underline; }
 
 /* ============================================
-   BRAND MARQUEE
-   ============================================ */
-.brand-marquee {
-  width: 100%;
-  background: linear-gradient(90deg, #C62828 0%, #E53935 50%, #C62828 100%);
-  color: #FFD54F;
-  padding: 14px 0;
-  overflow: hidden;
-  position: relative;
-  border-top: 3px solid #F9A825;
-  border-bottom: 3px solid #F9A825;
-  margin: 30px 0;
-}
-
-.marquee-track {
-  display: inline-flex;
-  align-items: center;
-  gap: 40px;
-  white-space: nowrap;
-  animation: marqueeScroll 30s linear infinite;
-}
-
-.marquee-item {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
-.marquee-star { color: #F9A825; font-size: 1.2rem; }
-
-@keyframes marqueeScroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
-
-/* ============================================
    AUTH PAGES
    ============================================ */
 .auth-wrapper {
@@ -639,17 +600,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
 /* ============================================
    ADMIN
    ============================================ */
-.admin-login-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%); }
-.admin-login-card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 100%; max-width: 420px; }
-.admin-login-card h1 { font-family: 'Montserrat', sans-serif; color: #2E7D32; margin-bottom: 6px; }
-.admin-login-card .subtitle { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
-.admin-login-card form { display: flex; flex-direction: column; gap: 6px; }
-.admin-login-card label { font-weight: 600; font-size: 0.9rem; margin-top: 10px; }
-.admin-login-card input { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-.admin-login-card button { margin-top: 20px; padding: 14px; background: #2E7D32; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-.admin-login-card button:hover { background: #1B5E20; }
-.error-msg { color: #C62828; font-size: 0.9rem; margin-top: 8px; }
-
 .admin-container { display: flex; min-height: 100vh; background: #f5f7fa; }
 .admin-sidebar { width: 240px; background: #1a2332; color: white; padding: 24px 0; display: flex; flex-direction: column; position: fixed; height: 100vh; }
 .admin-sidebar h2 { font-family: 'Montserrat', sans-serif; padding: 0 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; font-size: 1.3rem; }
@@ -807,34 +757,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
 .stock-item-qty small { font-size: 0.7rem; color: #888; text-transform: uppercase; }
 
 /* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 768px) {
-  .hamburger { display: flex; }
-  .nav-links {
-    position: absolute; top: 100%; left: 0; right: 0;
-    flex-direction: column; gap: 4px;
-    padding: 16px 24px 24px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    transform: translateY(-110%); opacity: 0;
-    transition: all 0.35s ease;
-    pointer-events: none;
-  }
-  .nav-links.mobile-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
-  .nav-links a, .cart-link, .nav-account-btn { width: 100%; text-align: center; }
-  .hero-section { padding: 60px 16px 50px; }
-  .hero-section h1 { font-size: 1.7rem; }
-  .admin-sidebar { width: 70px; }
-  .admin-sidebar h2, .admin-sidebar nav a { font-size: 0; padding: 14px 0; text-align: center; }
-  .admin-sidebar nav a { font-size: 1.4rem; }
-  .admin-sidebar h2 { font-size: 1.4rem; }
-  .logout-btn { font-size: 0.7rem; padding: 6px; margin: 10px; }
-  .admin-main { margin-left: 70px; padding: 20px; }
-  .form-row { grid-template-columns: 1fr; }
-  .cart-drawer { width: 100%; }
-}
-/* ============================================
    ADMIN LOGIN — PREMIUM
    ============================================ */
 .admin-login-wrapper {
@@ -848,7 +770,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   overflow: hidden;
 }
 
-/* Decorative orbs */
 .admin-orb {
   position: absolute;
   border-radius: 50%;
@@ -892,7 +813,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Brand header */
 .admin-brand {
   text-align: center;
   margin-bottom: 28px;
@@ -926,7 +846,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   margin-top: 4px;
 }
 
-/* Login card */
 .admin-login-card {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
@@ -963,10 +882,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   color: #888;
 }
 
-/* Input fields */
-.admin-field {
-  margin-bottom: 18px;
-}
+.admin-field { margin-bottom: 18px; }
 
 .admin-field label {
   display: block;
@@ -1032,14 +948,9 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   transition: background 0.2s;
 }
 
-.password-toggle:hover {
-  background: rgba(46, 125, 50, 0.08);
-}
+.password-toggle:hover { background: rgba(46, 125, 50, 0.08); }
 
-/* Remember me */
-.admin-remember {
-  margin: 4px 0 20px;
-}
+.admin-remember { margin: 4px 0 20px; }
 
 .checkbox-label {
   display: inline-flex;
@@ -1058,7 +969,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   cursor: pointer;
 }
 
-/* Error message */
 .admin-error {
   display: flex;
   align-items: center;
@@ -1078,11 +988,8 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.error-icon {
-  font-size: 1.1rem;
-}
+.error-icon { font-size: 1.1rem; }
 
-/* Submit button */
 .admin-submit-btn {
   width: 100%;
   display: inline-flex;
@@ -1108,22 +1015,13 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   box-shadow: 0 12px 28px rgba(46, 125, 50, 0.45);
 }
 
-.admin-submit-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
+.admin-submit-btn:active:not(:disabled) { transform: translateY(0); }
 
-.admin-submit-btn:disabled {
-  opacity: 0.75;
-  cursor: not-allowed;
-}
+.admin-submit-btn:disabled { opacity: 0.75; cursor: not-allowed; }
 
-.btn-arrow {
-  transition: transform 0.25s ease;
-}
+.btn-arrow { transition: transform 0.25s ease; }
 
-.admin-submit-btn:hover:not(:disabled) .btn-arrow {
-  transform: translateX(5px);
-}
+.admin-submit-btn:hover:not(:disabled) .btn-arrow { transform: translateX(5px); }
 
 .btn-spinner {
   width: 16px;
@@ -1134,11 +1032,8 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* Footer */
 .admin-login-footer {
   margin-top: 24px;
   padding-top: 20px;
@@ -1152,9 +1047,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   margin-bottom: 10px;
 }
 
-.support-line strong {
-  color: #1a2332;
-}
+.support-line strong { color: #1a2332; }
 
 .back-home-link {
   display: inline-block;
@@ -1165,11 +1058,8 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   transition: transform 0.2s ease;
 }
 
-.back-home-link:hover {
-  transform: translateX(-3px);
-}
+.back-home-link:hover { transform: translateX(-3px); }
 
-/* Secure note */
 .admin-secure-note {
   text-align: center;
   margin-top: 20px;
@@ -1178,7 +1068,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   letter-spacing: 0.5px;
 }
 
-/* Session check loading */
 .admin-login-loading {
   text-align: center;
   color: white;
@@ -1194,14 +1083,8 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   animation: spin 0.8s linear infinite;
 }
 
-/* Mobile */
-@media (max-width: 480px) {
-  .admin-login-card { padding: 30px 22px; border-radius: 20px; }
-  .admin-brand-title { font-size: 1.5rem; }
-  .admin-login-header h2 { font-size: 1.25rem; }
-}
 /* ============================================
-   ADMIN TOP BAR (Dashboard header with actions)
+   ADMIN TOP BAR
    ============================================ */
 .admin-top-bar {
   display: flex;
@@ -1221,19 +1104,10 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   margin-bottom: 4px;
 }
 
-.admin-welcome {
-  font-size: 0.85rem;
-  color: #888;
-}
+.admin-welcome { font-size: 0.85rem; color: #888; }
+.admin-welcome strong { color: #2E7D32; }
 
-.admin-welcome strong {
-  color: #2E7D32;
-}
-
-.admin-top-actions {
-  display: flex;
-  gap: 10px;
-}
+.admin-top-actions { display: flex; gap: 10px; }
 
 .admin-top-btn {
   display: inline-flex;
@@ -1251,10 +1125,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   white-space: nowrap;
 }
 
-.admin-top-btn .btn-icon {
-  font-size: 1rem;
-  line-height: 1;
-}
+.admin-top-btn .btn-icon { font-size: 1rem; line-height: 1; }
 
 .admin-top-btn.view-store {
   background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
@@ -1280,21 +1151,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   box-shadow: 0 8px 22px rgba(198, 40, 40, 0.35);
 }
 
-/* Mobile */
-@media (max-width: 640px) {
-  .admin-top-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-  }
-  .admin-top-actions {
-    flex-direction: column;
-  }
-  .admin-top-btn {
-    justify-content: center;
-    width: 100%;
-  }
-}
 /* ============================================
    NAVBAR — ADMIN PANEL BUTTON
    ============================================ */
@@ -1326,9 +1182,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   transition: left 0.6s ease;
 }
 
-.nav-admin-btn:hover::before {
-  left: 100%;
-}
+.nav-admin-btn:hover::before { left: 100%; }
 
 .nav-admin-btn:hover {
   transform: translateY(-2px);
@@ -1341,20 +1195,10 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   transition: transform 0.5s ease;
 }
 
-.nav-admin-btn:hover .nav-admin-icon {
-  transform: rotate(180deg);
-}
+.nav-admin-btn:hover .nav-admin-icon { transform: rotate(180deg); }
 
-/* Mobile: full-width admin button */
-@media (max-width: 768px) {
-  .nav-admin-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 18px;
-  }
-}
 /* ============================================
-   IMAGE UPLOAD ZONE (Add Product Modal)
+   IMAGE UPLOAD ZONE
    ============================================ */
 .image-upload-zone {
   border: 2px dashed #c8e6c9;
@@ -1386,11 +1230,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   pointer-events: none;
 }
 
-.upload-icon {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
-  line-height: 1;
-}
+.upload-icon { font-size: 2.5rem; margin-bottom: 8px; line-height: 1; }
 
 .upload-title {
   font-size: 0.95rem;
@@ -1406,16 +1246,9 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   margin: 0 4px;
 }
 
-.upload-hint {
-  font-size: 0.78rem;
-  color: #888;
-}
+.upload-hint { font-size: 0.78rem; color: #888; }
+.hidden-file-input { display: none; }
 
-.hidden-file-input {
-  display: none;
-}
-
-/* Upload progress */
 .upload-progress {
   display: flex;
   flex-direction: column;
@@ -1438,7 +1271,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   font-weight: 600;
 }
 
-/* Preview */
 .image-preview-lg {
   position: relative;
   border-radius: 14px;
@@ -1484,7 +1316,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   transform: scale(1.05);
 }
 
-/* URL fallback */
 .url-fallback {
   display: flex;
   flex-direction: column;
@@ -1512,10 +1343,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   transition: all 0.2s ease;
 }
 
-.url-fallback input:hover {
-  border-color: #c8e6c9;
-  background: white;
-}
+.url-fallback input:hover { border-color: #c8e6c9; background: white; }
 
 .url-fallback input:focus {
   outline: none;
@@ -1524,12 +1352,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
 }
 
-/* Mobile */
-@media (max-width: 640px) {
-  .image-upload-zone { padding: 24px 16px; }
-  .upload-icon { font-size: 2rem; }
-  .upload-title { font-size: 0.88rem; }
-}
 /* ============================================
    TRACK ORDER PAGE — PREMIUM
    ============================================ */
@@ -1553,10 +1375,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   line-height: 1.6;
 }
 
-.track-subtitle strong {
-  color: #2E7D32;
-  font-weight: 700;
-}
+.track-subtitle strong { color: #2E7D32; font-weight: 700; }
 
 /* --- Search Form --- */
 .track-form {
@@ -1575,7 +1394,15 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   font-size: 1rem;
   font-family: inherit;
   background: white;
+  color: #1a2332;                /* ← CHANGED: text color */
+  font-weight: 600;               /* ← CHANGED: bolder text */
   transition: all 0.25s ease;
+}
+
+.track-input::placeholder {
+  color: #999;                    /* ← CHANGED: placeholder color */
+  font-weight: 400;
+  opacity: 1;
 }
 
 .track-input:hover { border-color: #c8e6c9; }
@@ -1609,11 +1436,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
 .track-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* --- Loading --- */
-.track-loading {
-  text-align: center;
-  padding: 70px 20px;
-  color: #666;
-}
+.track-loading { text-align: center; padding: 70px 20px; color: #666; }
 
 .track-spinner {
   width: 44px;
@@ -1624,8 +1447,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   margin: 0 auto 16px;
   animation: spin 0.8s linear infinite;
 }
-
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* --- Empty State --- */
 .track-empty {
@@ -1638,11 +1459,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 }
 
-.track-empty .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 16px;
-  line-height: 1;
-}
+.track-empty .empty-icon { font-size: 4rem; margin-bottom: 16px; line-height: 1; }
 
 .track-empty h3 {
   font-family: 'Montserrat', sans-serif;
@@ -1701,7 +1518,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Card header */
 .track-card-header {
   display: flex;
   justify-content: space-between;
@@ -1713,17 +1529,8 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   gap: 14px;
 }
 
-.track-header-left {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.track-code-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.track-header-left { display: flex; flex-direction: column; gap: 6px; }
+.track-code-row { display: flex; align-items: center; gap: 10px; }
 
 .track-code {
   font-family: 'Montserrat', sans-serif;
@@ -1754,14 +1561,9 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   transform: scale(1.1);
 }
 
-.track-date {
-  font-size: 0.85rem;
-  color: #888;
-}
+.track-date { font-size: 0.85rem; color: #888; }
 
-/* ============================================
-   TIMELINE — HORIZONTAL PROGRESS BAR
-   ============================================ */
+/* --- Timeline --- */
 .track-timeline {
   padding: 36px 20px 28px;
   background: #fafbfc;
@@ -1787,7 +1589,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   z-index: 1;
 }
 
-/* Circle */
 .timeline-circle {
   width: 44px;
   height: 44px;
@@ -1819,9 +1620,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   animation: pulseStep 2s ease-in-out infinite;
 }
 
-.timeline-step.pending .timeline-circle {
-  opacity: 0.7;
-}
+.timeline-step.pending .timeline-circle { opacity: 0.7; }
 
 @keyframes pulseStep {
   0%, 100% {
@@ -1834,7 +1633,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   }
 }
 
-/* Label */
 .timeline-label {
   margin-top: 12px;
   font-size: 0.78rem;
@@ -1846,16 +1644,10 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
 }
 
 .timeline-step.completed .timeline-label,
-.timeline-step.current .timeline-label {
-  color: #1a2332;
-}
+.timeline-step.current .timeline-label { color: #1a2332; }
 
-.timeline-step.current .timeline-label {
-  color: #ef6c00;
-  font-weight: 700;
-}
+.timeline-step.current .timeline-label { color: #ef6c00; font-weight: 700; }
 
-/* Connector (the line between circles) */
 .timeline-connector {
   position: absolute;
   top: 22px;
@@ -1872,7 +1664,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%);
 }
 
-/* Details */
 .track-details {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -1881,15 +1672,8 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   border-bottom: 1px solid #eef1f4;
 }
 
-.track-detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.track-detail-item.full {
-  grid-column: 1 / -1;
-}
+.track-detail-item { display: flex; flex-direction: column; gap: 6px; }
+.track-detail-item.full { grid-column: 1 / -1; }
 
 .detail-label {
   font-size: 0.72rem;
@@ -1913,7 +1697,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   font-size: 1.15rem;
 }
 
-/* History */
 .track-history {
   padding: 22px 28px;
   border-bottom: 1px solid #eef1f4;
@@ -1928,11 +1711,7 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   letter-spacing: 0.5px;
 }
 
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+.history-list { display: flex; flex-direction: column; gap: 14px; }
 
 .history-entry {
   display: flex;
@@ -1963,23 +1742,10 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   z-index: 1;
 }
 
-.history-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+.history-info { display: flex; flex-direction: column; gap: 2px; }
+.history-info strong { font-size: 0.9rem; color: #1a2332; }
+.history-time { font-size: 0.78rem; color: #888; }
 
-.history-info strong {
-  font-size: 0.9rem;
-  color: #1a2332;
-}
-
-.history-time {
-  font-size: 0.78rem;
-  color: #888;
-}
-
-/* Card Actions */
 .track-card-actions {
   display: flex;
   gap: 12px;
@@ -2031,7 +1797,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   background: #f8fdf9;
 }
 
-/* Cancelled notice */
 .cancelled-notice {
   background: #ffebee;
   border-left: 4px solid #C62828;
@@ -2044,9 +1809,47 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
 }
 
 /* ============================================
-   MOBILE
+   RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
+  .hamburger { display: flex; }
+  .nav-links {
+    position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; gap: 4px;
+    padding: 16px 24px 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    transform: translateY(-110%); opacity: 0;
+    transition: all 0.35s ease;
+    pointer-events: none;
+  }
+  .nav-links.mobile-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .nav-links a, .cart-link, .nav-account-btn { width: 100%; text-align: center; }
+  .hero-section { padding: 60px 16px 50px; }
+  .hero-section h1 { font-size: 1.7rem; }
+  .admin-sidebar { width: 70px; }
+  .admin-sidebar h2, .admin-sidebar nav a { font-size: 0; padding: 14px 0; text-align: center; }
+  .admin-sidebar nav a { font-size: 1.4rem; }
+  .admin-sidebar h2 { font-size: 1.4rem; }
+  .logout-btn { font-size: 0.7rem; padding: 6px; margin: 10px; }
+  .admin-main { margin-left: 70px; padding: 20px; }
+  .form-row { grid-template-columns: 1fr; }
+  .cart-drawer { width: 100%; }
+
+  .nav-admin-btn { width: 100%; justify-content: center; padding: 14px 18px; }
+
+  .admin-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .admin-top-actions { flex-direction: column; }
+  .admin-top-btn { justify-content: center; width: 100%; }
+
+  .image-upload-zone { padding: 24px 16px; }
+  .upload-icon { font-size: 2rem; }
+  .upload-title { font-size: 0.88rem; }
+
   .track-wrapper { padding: 30px 0 60px; }
   .track-form { flex-direction: column; padding: 0 16px; }
   .track-btn { width: 100%; }
@@ -2054,7 +1857,6 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   .track-card-header { padding: 20px 20px; }
   .track-code { font-size: 1.05rem; }
 
-  /* Timeline becomes vertical on mobile */
   .track-timeline {
     padding: 24px 20px;
     overflow-x: visible;
@@ -2098,4 +1900,10 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   .track-card-actions { padding: 18px 20px; }
   .track-wa-btn, .track-continue-btn { min-width: 100%; }
   .cancelled-notice { margin: 16px 20px 0; }
+}
+
+@media (max-width: 480px) {
+  .admin-login-card { padding: 30px 22px; border-radius: 20px; }
+  .admin-brand-title { font-size: 1.5rem; }
+  .admin-login-header h2 { font-size: 1.25rem; }
 }
