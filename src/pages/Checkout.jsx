@@ -1,14 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Checkout() {
   const { cart, getTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', phone: '', address: '' });
   const [submitting, setSubmitting] = useState(false);
+
+  // Auto-fill from logged-in user
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        name: prev.name || user.user_metadata?.full_name || '',
+        phone: prev.phone || user.user_metadata?.phone || '',
+      }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +37,7 @@ export default function Checkout() {
           customer_address: form.address,
           total_amount: getTotal(),
           status: 'Pending',
+          user_id: user?.id || null,
         })
         .select()
         .single();
@@ -63,6 +77,12 @@ export default function Checkout() {
     <div className="app-container">
       <h1 className="page-title">Checkout</h1>
       <div className="checkout-grid">
+        {!user && (
+          <div className="guest-notice">
+            Checking out as a <strong>guest</strong>.{' '}
+            <a href="/login">Sign in</a> to save your details for next time.
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="checkout-form">
           <label>Full Name</label>
           <input

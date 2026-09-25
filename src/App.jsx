@@ -8,6 +8,9 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import TrackOrder from './pages/TrackOrder';
+import CustomerLogin from './pages/CustomerLogin';
+import CustomerSignup from './pages/CustomerSignup';
+import MyOrders from './pages/MyOrders';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOrders from './pages/AdminOrders';
@@ -26,6 +29,9 @@ function App() {
           <Route path="/cart" element={<><Navbar /><Cart /></>} />
           <Route path="/checkout" element={<><Navbar /><Checkout /></>} />
           <Route path="/order-confirmed/:orderId" element={<><Navbar /><OrderConfirmation /></>} />
+          <Route path="/login" element={<><Navbar /><CustomerLogin /></>} />
+          <Route path="/signup" element={<><Navbar /><CustomerSignup /></>} />
+          <Route path="/my-orders" element={<><Navbar /><MyOrders /></>} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
