@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Navbar() {
   const { getItemCount, openDrawer } = useCart();
   const { user, signOut, isAdmin } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Scroll detection for glassmorphism
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -18,6 +22,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Close mobile menu on route change
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
@@ -35,11 +40,13 @@ export default function Navbar() {
   return (
     <nav className={`navbar-glass ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-inner">
+        {/* Brand logo */}
         <Link to="/" className="nav-logo">
           <span className="logo-icon">🌿</span>
           <span className="logo-text">Mahalaxmi Chips</span>
         </Link>
 
+        {/* Mobile hamburger */}
         <button
           className={`hamburger ${menuOpen ? 'open' : ''}`}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -50,22 +57,43 @@ export default function Navbar() {
           <span></span>
         </button>
 
+        {/* Nav links + actions */}
         <div className={`nav-links ${menuOpen ? 'mobile-open' : ''}`}>
-          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>Home</Link>
-          <Link to="/products" className={location.pathname === '/products' ? 'active' : ''}>Products</Link>
-          <Link to="/track" className={location.pathname === '/track' ? 'active' : ''}>Track Order</Link>
+          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
+            {t('nav.home')}
+          </Link>
 
-          {/* Customer: My Orders link */}
+          <Link
+            to="/products"
+            className={location.pathname === '/products' ? 'active' : ''}
+          >
+            {t('nav.products')}
+          </Link>
+
+          <Link
+            to="/track"
+            className={location.pathname === '/track' ? 'active' : ''}
+          >
+            {t('nav.track')}
+          </Link>
+
+          {/* Customer: My Orders */}
           {user && !isAdmin && (
-            <Link to="/my-orders" className={location.pathname === '/my-orders' ? 'active' : ''}>
-              My Orders
+            <Link
+              to="/my-orders"
+              className={location.pathname === '/my-orders' ? 'active' : ''}
+            >
+              {t('nav.myOrders')}
             </Link>
           )}
 
-          {/* Not logged in: Login link */}
+          {/* Not logged in: Login */}
           {!user && (
-            <Link to="/login" className={location.pathname === '/login' ? 'active' : ''}>
-              Login
+            <Link
+              to="/login"
+              className={location.pathname === '/login' ? 'active' : ''}
+            >
+              {t('nav.login')}
             </Link>
           )}
 
@@ -73,20 +101,34 @@ export default function Navbar() {
           {user && isAdmin && (
             <Link to="/admin/dashboard" className="nav-admin-btn">
               <span className="nav-admin-icon">⚙</span>
-              Admin Panel
+              {t('nav.adminPanel')}
             </Link>
           )}
 
-          {/* Logged in: Sign Out button */}
+          {/* Sign Out */}
           {user && (
-            <button className="nav-account-btn" onClick={handleSignOut} title={user.email}>
-              Sign Out
+            <button
+              className="nav-account-btn"
+              onClick={handleSignOut}
+              title={user.email}
+            >
+              {t('nav.signOut')}
             </button>
           )}
 
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Cart */}
-          <button className="cart-link" onClick={handleCartClick} aria-label="Open cart">
-            🛒 Cart {getItemCount() > 0 && <span className="cart-badge">{getItemCount()}</span>}
+          <button
+            className="cart-link"
+            onClick={handleCartClick}
+            aria-label="Open cart"
+          >
+            🛒 {t('nav.cart')}
+            {getItemCount() > 0 && (
+              <span className="cart-badge">{getItemCount()}</span>
+            )}
           </button>
         </div>
       </div>

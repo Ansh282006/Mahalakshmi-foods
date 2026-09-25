@@ -2598,3 +2598,392 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   .wa-label { font-size: 0.72rem; }
   .wa-section { padding: 16px; }
 }
+/* ============================================
+   ORDER CONFIRMATION PAGE
+   ============================================ */
+.confirm-wrapper {
+  min-height: 80vh;
+  padding: 40px 0 60px;
+  background: linear-gradient(135deg, #f8fdf9 0%, #fdfbf7 50%, #fff5f5 100%);
+}
+
+.confirm-card {
+  max-width: 620px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 24px;
+  padding: 44px 34px;
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  animation: confirmIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes confirmIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Success checkmark */
+.confirm-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.checkmark-circle {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 32px rgba(46, 125, 50, 0.35);
+  animation: checkPop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.checkmark-circle span {
+  color: white;
+  font-size: 2.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@keyframes checkPop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.confirm-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.85rem;
+  color: #1a2332;
+  margin-bottom: 12px;
+  letter-spacing: -0.3px;
+}
+
+.confirm-subtitle {
+  color: #666;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  margin: 0 auto 30px;
+  max-width: 480px;
+}
+
+/* Order code box */
+.confirm-code-box {
+  background: linear-gradient(135deg, #f0f9f1 0%, #e8f5e9 100%);
+  border: 2px dashed #a5d6a7;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 26px;
+}
+
+.confirm-code-box label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2E7D32;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.confirm-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.confirm-code {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #1B5E20;
+  letter-spacing: 2.5px;
+}
+
+.copy-btn {
+  background: white;
+  border: 1px solid #c8e6c9;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: #2E7D32;
+  transform: scale(1.1);
+  border-color: #2E7D32;
+}
+
+.confirm-code-box small {
+  color: #558b2f;
+  font-size: 0.78rem;
+}
+
+/* Summary */
+.confirm-summary {
+  text-align: left;
+  background: #fafbfc;
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 26px;
+}
+
+.confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1f4;
+  gap: 16px;
+}
+
+.confirm-row:last-child { border-bottom: none; padding-bottom: 0; }
+.confirm-row:first-child { padding-top: 0; }
+
+.confirm-row > span:first-child {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.confirm-price {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  color: #C62828;
+  font-weight: 700;
+}
+
+.confirm-address {
+  text-align: right;
+  font-size: 0.88rem;
+  color: #1a2332;
+  line-height: 1.5;
+  max-width: 60%;
+}
+
+/* Actions */
+.confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirm-btn {
+  padding: 15px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirm-btn.whatsapp {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+}
+
+.confirm-btn.whatsapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(37, 211, 102, 0.4);
+}
+
+.confirm-btn.track {
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(46, 125, 50, 0.3);
+}
+
+.confirm-btn.track:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(46, 125, 50, 0.4);
+}
+
+.confirm-btn.continue {
+  background: transparent;
+  color: #666;
+  border: 1.5px solid #ddd;
+}
+
+.confirm-btn.continue:hover {
+  background: #f5f7fa;
+  color: #2E7D32;
+  border-color: #2E7D32;
+}
+
+/* Help */
+.confirm-help {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid #eef1f4;
+}
+
+.confirm-help p {
+  font-size: 0.85rem;
+  color: #888;
+  line-height: 1.6;
+}
+
+.confirm-help strong { color: #1a2332; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .confirm-card { padding: 32px 22px; border-radius: 20px; }
+  .confirm-title { font-size: 1.45rem; }
+  .confirm-code { font-size: 1.35rem; letter-spacing: 1.5px; }
+  .checkmark-circle { width: 72px; height: 72px; }
+  .checkmark-circle span { font-size: 2.4rem; }
+  .confirm-address { text-align: left; max-width: 100%; }
+  .confirm-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+/* ============================================
+   PWA INSTALL BANNER
+   ============================================ */
+.pwa-banner {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  max-width: 440px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10000;
+  animation: pwaSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #e0e0e0;
+}
+
+@keyframes pwaSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pwa-banner-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.pwa-banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pwa-banner-text strong {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  color: #1a2332;
+}
+
+.pwa-banner-text span {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.pwa-install-btn {
+  padding: 9px 18px;
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.pwa-install-btn:hover { transform: translateY(-2px); }
+
+.pwa-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pwa-dismiss-btn:hover { background: #f0f0f0; color: #C62828; }
+/* ============================================
+   LANGUAGE SWITCHER
+   ============================================ */
+.lang-switcher {
+  display: inline-flex;
+  gap: 2px;
+  background: #f5f7fa;
+  padding: 3px;
+  border-radius: 24px;
+  border: 1px solid #e0e0e0;
+}
+
+.lang-btn {
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  color: #2E7D32;
+  background: rgba(46, 125, 50, 0.08);
+}
+
+.lang-btn.active {
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+}
+
+@media (max-width: 768px) {
+  .lang-switcher {
+    width: 100%;
+    justify-content: center;
+  }
+  .lang-btn {
+    flex: 1;
+    text-align: center;
+  }
+}

@@ -16,11 +16,8 @@ export default function OrderConfirmation() {
         .eq('id', orderId)
         .single();
 
-      if (error) {
-        console.error(error);
-      } else {
-        setOrder(data);
-      }
+      if (error) console.error(error);
+      else setOrder(data);
       setLoading(false);
     }
     fetchOrder();
@@ -35,8 +32,7 @@ export default function OrderConfirmation() {
   const shareOnWhatsApp = () => {
     if (!order) return;
     const message = `🌿 *Mahalaxmi Krushi Prakriya Udyog*\n\nI just placed an order!\n\n📋 Order Code: *${order.order_code}*\n💰 Total: ₹${order.total_amount}\n📍 Delivery to: ${order.customer_name}\n\nTrack it anytime at our website. 🙏`;
-    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   if (loading) {
@@ -49,10 +45,13 @@ export default function OrderConfirmation() {
 
   if (!order) {
     return (
-      <div className="app-container">
-        <div className="confirm-wrapper">
-          <h1 className="page-title">Order not found</h1>
-          <Link to="/track" className="track-shop-link">Track Order →</Link>
+      <div className="confirm-wrapper">
+        <div className="app-container">
+          <div className="confirm-card">
+            <h1 className="confirm-title">Order not found</h1>
+            <p className="confirm-subtitle">We couldn't find this order.</p>
+            <Link to="/track" className="track-shop-link">Track Order →</Link>
+          </div>
         </div>
       </div>
     );
@@ -62,24 +61,33 @@ export default function OrderConfirmation() {
     <div className="confirm-wrapper">
       <div className="app-container">
         <div className="confirm-card">
+          {/* Success Icon */}
           <div className="confirm-icon">
-            <div className="checkmark-circle"><span>✓</span></div>
+            <div className="checkmark-circle">
+              <span>✓</span>
+            </div>
           </div>
 
+          {/* Title */}
           <h1 className="confirm-title">Order Placed Successfully!</h1>
           <p className="confirm-subtitle">
-            Thank you, <strong>{order.customer_name}</strong>! We've received your order and will contact you soon on <strong>{order.customer_phone}</strong>.
+            Thank you, <strong>{order.customer_name}</strong>! We've received your order and
+            will contact you soon on <strong>{order.customer_phone}</strong>.
           </p>
 
+          {/* Order Code */}
           <div className="confirm-code-box">
             <label>Your Order Code</label>
             <div className="confirm-code-row">
               <span className="confirm-code">{order.order_code}</span>
-              <button className="copy-btn" onClick={copyToClipboard} title="Copy code">📋</button>
+              <button className="copy-btn" onClick={copyToClipboard} title="Copy code">
+                📋
+              </button>
             </div>
             <small>Save this code to track your order anytime.</small>
           </div>
 
+          {/* Summary */}
           <div className="confirm-summary">
             <div className="confirm-row">
               <span>Total Amount</span>
@@ -95,16 +103,24 @@ export default function OrderConfirmation() {
             </div>
           </div>
 
+          {/* Actions */}
           <div className="confirm-actions">
             <button className="confirm-btn whatsapp" onClick={shareOnWhatsApp}>
               📱 Share on WhatsApp
             </button>
-            <Link to="/track" className="confirm-btn track">📦 Track Order</Link>
-            <Link to="/products" className="confirm-btn continue">🛒 Continue Shopping</Link>
+            <Link to="/track" className="confirm-btn track">
+              📦 Track Order
+            </Link>
+            <Link to="/products" className="confirm-btn continue">
+              🛒 Continue Shopping
+            </Link>
           </div>
 
+          {/* Help */}
           <div className="confirm-help">
-            <p>Questions? Call us at <strong>7774982725</strong> or <strong>9168843668</strong></p>
+            <p>
+              Questions? Call us at <strong>7774982725</strong> or <strong>9168843668</strong>
+            </p>
           </div>
         </div>
       </div>

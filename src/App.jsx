@@ -16,11 +16,13 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import './App.css';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 import AdminAnalytics from './pages/AdminAnalytics';
 
 function App() {
   return (
     <CartProvider>
+      <PWAInstallPrompt />
       <BrowserRouter>
         <CartDrawer />
         <Routes>

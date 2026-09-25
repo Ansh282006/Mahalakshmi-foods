@@ -1,0 +1,60 @@
+{
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "track": "Track Order",
+    "myOrders": "My Orders",
+    "login": "Login",
+    "signOut": "Sign Out",
+    "cart": "Cart",
+    "adminPanel": "Admin Panel"
+  },
+  "hero": {
+    "subtitle": "Authentic, crunchy, and made with traditional care.",
+    "shopAll": "Shop All Products"
+  },
+  "products": {
+    "title": "All Products",
+    "bestSellers": "Our Best Sellers",
+    "all": "All",
+    "bananaChips": "Banana Chips",
+    "jackfruitChips": "Jackfruit Chips",
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock",
+    "onlyLeft": "Only {{count}} left",
+    "new": "New"
+  },
+  "cart": {
+    "yourCart": "Your Cart",
+    "empty": "Your cart is empty",
+    "emptyHint": "Add some delicious chips to get started!",
+    "browse": "Browse Products",
+    "checkout": "Proceed to Checkout",
+    "continue": "Continue Shopping",
+    "subtotal": "Subtotal",
+    "items": "items"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "name": "Full Name",
+    "phone": "Phone Number",
+    "address": "Delivery Address",
+    "placeOrder": "Place Order",
+    "placing": "Placing Order..."
+  },
+  "track": {
+    "title": "Track Your Order",
+    "subtitle": "Enter your order code or phone number",
+    "placeholder": "MF-2026-0001 or 9876543210",
+    "btn": "Track",
+    "searching": "Searching..."
+  },
+  "footer": {
+    "contact": "Contact",
+    "madeWith": "Made with ❤️ in Kolhapur"
+  },
+  "common": {
+    "language": "Language",
+    "loading": "Loading..."
+  }
+}
