@@ -3,18 +3,19 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import useWishlist from '../hooks/useWishlist';
 import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Navbar() {
   const { getItemCount, openDrawer } = useCart();
   const { user, signOut, isAdmin } = useAuth();
+  const { count: wishlistCount } = useWishlist();
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Scroll detection for glassmorphism
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -22,7 +23,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
@@ -40,13 +40,11 @@ export default function Navbar() {
   return (
     <nav className={`navbar-glass ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar-inner">
-        {/* Brand logo */}
         <Link to="/" className="nav-logo">
           <span className="logo-icon">🌿</span>
           <span className="logo-text">Mahalaxmi Chips</span>
         </Link>
 
-        {/* Mobile hamburger */}
         <button
           className={`hamburger ${menuOpen ? 'open' : ''}`}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -57,7 +55,6 @@ export default function Navbar() {
           <span></span>
         </button>
 
-        {/* Nav links + actions */}
         <div className={`nav-links ${menuOpen ? 'mobile-open' : ''}`}>
           <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
             {t('nav.home')}
@@ -77,7 +74,23 @@ export default function Navbar() {
             {t('nav.track')}
           </Link>
 
-          {/* Customer: My Orders */}
+          {/* Wishlist Link */}
+          <Link
+            to="/wishlist"
+            className={location.pathname === '/wishlist' ? 'active' : ''}
+          >
+            🤍 Wishlist{' '}
+            {wishlistCount > 0 && <span className="cart-badge">{wishlistCount}</span>}
+          </Link>
+
+          {/* Bulk Order Link */}
+          <Link
+            to="/bulk-order"
+            className={location.pathname === '/bulk-order' ? 'active' : ''}
+          >
+            📦 Bulk Order
+          </Link>
+
           {user && !isAdmin && (
             <Link
               to="/my-orders"
@@ -87,7 +100,6 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Not logged in: Login */}
           {!user && (
             <Link
               to="/login"
@@ -97,7 +109,6 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Admin: Admin Panel button */}
           {user && isAdmin && (
             <Link to="/admin/dashboard" className="nav-admin-btn">
               <span className="nav-admin-icon">⚙</span>
@@ -105,7 +116,6 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Sign Out */}
           {user && (
             <button
               className="nav-account-btn"
@@ -116,10 +126,8 @@ export default function Navbar() {
             </button>
           )}
 
-          {/* Language Switcher */}
           <LanguageSwitcher />
 
-          {/* Cart */}
           <button
             className="cart-link"
             onClick={handleCartClick}

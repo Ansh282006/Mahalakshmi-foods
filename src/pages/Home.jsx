@@ -11,6 +11,7 @@ import BrandMarquee from '../components/BrandMarquee';
 import StarRating from '../components/StarRating';
 import ReviewsModal from '../components/ReviewsModal';
 import PincodeChecker from '../components/PincodeChecker';
+import WishlistButton from '../components/WishlistButton';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -77,7 +78,7 @@ export default function Home() {
 
   return (
     <>
-      {/* ---------- FULL-WIDTH HERO ---------- */}
+      {/* Hero */}
       <header className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
@@ -100,15 +101,14 @@ export default function Home() {
         <div className="hero-orb hero-orb-3"></div>
       </header>
 
-      {/* ---------- FULL-WIDTH MARQUEE ---------- */}
       <BrandMarquee />
 
-      {/* ---------- PINCODE CHECKER ---------- */}
+      {/* Pincode Checker */}
       <div className="pincode-section">
         <PincodeChecker />
       </div>
 
-      {/* ---------- PRODUCT GRID ---------- */}
+      {/* Product Grid */}
       <div className="app-container">
         <section className="products-section">
           <h2 className="section-title">Our Best Sellers</h2>
@@ -130,6 +130,7 @@ export default function Home() {
                           {outOfStock && (
                             <div className="out-of-stock-badge">Out of Stock</div>
                           )}
+                          <WishlistButton product={product} />
                         </div>
                         <div className="product-info">
                           <h3>{product.name}</h3>
@@ -170,7 +171,6 @@ export default function Home() {
         </section>
       </div>
 
-      {/* ---------- REVIEWS MODAL ---------- */}
       {reviewProduct && (
         <ReviewsModal
           product={reviewProduct}

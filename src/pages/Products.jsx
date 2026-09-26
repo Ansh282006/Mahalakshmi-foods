@@ -9,6 +9,7 @@ import RevealCard from '../components/RevealCard';
 import BrandMarquee from '../components/BrandMarquee';
 import StarRating from '../components/StarRating';
 import ReviewsModal from '../components/ReviewsModal';
+import WishlistButton from '../components/WishlistButton';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -30,7 +31,7 @@ export default function Products() {
     fetchAll();
   }, []);
 
-  // Inject product structured data whenever products change
+  // Structured data for products
   useEffect(() => {
     if (products.length > 0) {
       let script = document.getElementById('structured-data');
@@ -87,7 +88,6 @@ export default function Products() {
 
   return (
     <>
-      {/* ---------- FULL-WIDTH MARQUEE ---------- */}
       <BrandMarquee />
 
       <div className="app-container">
@@ -132,6 +132,7 @@ export default function Products() {
                             Only {product.stock} left
                           </div>
                         )}
+                        <WishlistButton product={product} />
                       </div>
                       <div className="product-info">
                         <h3>{product.name}</h3>
@@ -171,7 +172,6 @@ export default function Products() {
         </div>
       </div>
 
-      {/* ---------- REVIEWS MODAL ---------- */}
       {reviewProduct && (
         <ReviewsModal
           product={reviewProduct}
