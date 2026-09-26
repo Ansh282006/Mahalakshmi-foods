@@ -1,13 +1,24 @@
 {
   "nav": {
+    "menu": "MENU",
     "home": "Home",
     "products": "Products",
     "track": "Track Order",
     "myOrders": "My Orders",
     "login": "Login",
+    "signup": "Create Account",
     "signOut": "Sign Out",
     "cart": "Cart",
-    "adminPanel": "Admin Panel"
+    "saved": "Saved",
+    "wishlist": "Wishlist",
+    "bulkOrder": "Bulk Order",
+    "adminPanel": "Admin Panel",
+    "shop": "SHOP",
+    "account": "ACCOUNT",
+    "support": "SUPPORT",
+    "callUs": "Call Us",
+    "whatsapp": "WhatsApp",
+    "signedInAs": "Signed in as"
   },
   "hero": {
     "subtitle": "Authentic, crunchy, and made with traditional care.",
@@ -40,7 +51,9 @@
     "phone": "Phone Number",
     "address": "Delivery Address",
     "placeOrder": "Place Order",
-    "placing": "Placing Order..."
+    "placing": "Placing Order...",
+    "coupon": "Enter coupon code",
+    "apply": "Apply"
   },
   "track": {
     "title": "Track Your Order",
@@ -51,7 +64,7 @@
   },
   "footer": {
     "contact": "Contact",
-    "madeWith": "Made with ❤️ in Kolhapur"
+    "madeWith": "Made with love in Kolhapur"
   },
   "common": {
     "language": "Language",

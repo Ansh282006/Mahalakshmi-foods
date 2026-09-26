@@ -14,24 +14,18 @@ export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Close sidebar on route change
   useEffect(() => {
     onClose();
   }, [location.pathname]);
 
-  // Lock body scroll when open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (isOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
 
-  // Close on Escape key
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -50,15 +44,12 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`sidebar-backdrop ${isOpen ? 'open' : ''}`}
         onClick={onClose}
       />
 
-      {/* Sidebar Panel */}
       <aside className={`sidebar-panel ${isOpen ? 'open' : ''}`}>
-        {/* Header */}
         <div className="sidebar-header">
           <Link to="/" className="sidebar-brand" onClick={onClose}>
             <span className="sidebar-brand-name">MAHALAXMI</span>
@@ -74,34 +65,33 @@ export default function Sidebar({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Menu */}
         <nav className="sidebar-nav">
-          {/* Section: Shop */}
+          {/* SHOP */}
           <div className="sidebar-section">
-            <span className="sidebar-section-label">SHOP</span>
+            <span className="sidebar-section-label">{t('nav.shop')}</span>
             <Link
               to="/"
               className={`sidebar-link ${isActive('/') ? 'active' : ''}`}
             >
-              Home
+              {t('nav.home')}
             </Link>
             <Link
               to="/products"
               className={`sidebar-link ${isActive('/products') ? 'active' : ''}`}
             >
-              Products
+              {t('nav.products')}
             </Link>
             <Link
               to="/bulk-order"
               className={`sidebar-link ${isActive('/bulk-order') ? 'active' : ''}`}
             >
-              Bulk Order
+              {t('nav.bulkOrder')}
             </Link>
           </div>
 
-          {/* Section: Account */}
+          {/* ACCOUNT */}
           <div className="sidebar-section">
-            <span className="sidebar-section-label">ACCOUNT</span>
+            <span className="sidebar-section-label">{t('nav.account')}</span>
 
             {!user && (
               <>
@@ -109,13 +99,13 @@ export default function Sidebar({ isOpen, onClose }) {
                   to="/login"
                   className={`sidebar-link ${isActive('/login') ? 'active' : ''}`}
                 >
-                  Login
+                  {t('nav.login')}
                 </Link>
                 <Link
                   to="/signup"
                   className={`sidebar-link ${isActive('/signup') ? 'active' : ''}`}
                 >
-                  Create Account
+                  {t('nav.signup')}
                 </Link>
               </>
             )}
@@ -125,7 +115,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 to="/my-orders"
                 className={`sidebar-link ${isActive('/my-orders') ? 'active' : ''}`}
               >
-                My Orders
+                {t('nav.myOrders')}
               </Link>
             )}
 
@@ -134,38 +124,38 @@ export default function Sidebar({ isOpen, onClose }) {
                 to="/admin/dashboard"
                 className={`sidebar-link admin-link ${isActive('/admin/dashboard') ? 'active' : ''}`}
               >
-                Admin Panel
+                {t('nav.adminPanel')}
               </Link>
             )}
 
             {user && (
               <>
                 <div className="sidebar-user-info">
-                  <span className="sidebar-user-label">Signed in as</span>
+                  <span className="sidebar-user-label">{t('nav.signedInAs')}</span>
                   <span className="sidebar-user-email">{user.email}</span>
                 </div>
                 <button className="sidebar-link logout" onClick={handleSignOut}>
-                  Sign Out
+                  {t('nav.signOut')}
                 </button>
               </>
             )}
           </div>
 
-          {/* Section: Support */}
+          {/* SUPPORT */}
           <div className="sidebar-section">
-            <span className="sidebar-section-label">SUPPORT</span>
+            <span className="sidebar-section-label">{t('nav.support')}</span>
             <Link
               to="/track"
               className={`sidebar-link ${isActive('/track') ? 'active' : ''}`}
             >
-              Track Order
+              {t('nav.track')}
             </Link>
             <a
               href="tel:+917774982725"
               className="sidebar-link"
               onClick={onClose}
             >
-              Call Us
+              {t('nav.callUs')}
             </a>
             <a
               href="https://wa.me/917774982725"
@@ -173,12 +163,11 @@ export default function Sidebar({ isOpen, onClose }) {
               rel="noopener noreferrer"
               className="sidebar-link"
             >
-              WhatsApp
+              {t('nav.whatsapp')}
             </a>
           </div>
         </nav>
 
-        {/* Footer */}
         <div className="sidebar-footer">
           <div className="sidebar-footer-lang">
             <LanguageSwitcher />
@@ -186,11 +175,11 @@ export default function Sidebar({ isOpen, onClose }) {
 
           <div className="sidebar-footer-stats">
             <Link to="/wishlist" className="sidebar-stat" onClick={onClose}>
-              <span className="sidebar-stat-label">Wishlist</span>
+              <span className="sidebar-stat-label">{t('nav.wishlist')}</span>
               <span className="sidebar-stat-count">{wishlistCount}</span>
             </Link>
             <Link to="/cart" className="sidebar-stat" onClick={onClose}>
-              <span className="sidebar-stat-label">Cart</span>
+              <span className="sidebar-stat-label">{t('nav.cart')}</span>
               <span className="sidebar-stat-count">{getItemCount()}</span>
             </Link>
           </div>

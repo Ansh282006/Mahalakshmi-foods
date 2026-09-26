@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import useWishlist from '../hooks/useWishlist';
@@ -9,6 +10,7 @@ export default function Navbar() {
   const { getItemCount, openDrawer } = useCart();
   const { user, isAdmin } = useAuth();
   const { count: wishlistCount } = useWishlist();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,21 +22,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleCartClick = () => {
-    openDrawer();
-  };
-
   const handleAdminClick = () => {
-    if (user && isAdmin) {
-      navigate('/admin/dashboard');
-    }
+    if (user && isAdmin) navigate('/admin/dashboard');
   };
 
   return (
     <>
       <nav className={`topbar ${scrolled ? 'scrolled' : ''}`}>
         <div className="topbar-inner">
-          {/* Left: Menu button */}
           <button
             className="topbar-menu-btn"
             onClick={() => setSidebarOpen(true)}
@@ -43,37 +38,30 @@ export default function Navbar() {
             <span></span>
             <span></span>
             <span></span>
-            <span className="topbar-menu-label">MENU</span>
+            <span className="topbar-menu-label">{t('nav.menu')}</span>
           </button>
 
-          {/* Center: Logo */}
           <Link to="/" className="topbar-logo">
             <span className="topbar-logo-name">MAHALAXMI</span>
             <span className="topbar-logo-sub">CHIPS</span>
           </Link>
 
-          {/* Right: Actions */}
           <div className="topbar-actions">
             {user && isAdmin ? (
               <button
                 className="topbar-action-btn admin"
                 onClick={handleAdminClick}
-                aria-label="Admin Panel"
               >
-                Admin
+                {t('nav.adminPanel')}
               </button>
             ) : (
               <Link to="/track" className="topbar-action-btn">
-                Track
+                {t('nav.track')}
               </Link>
             )}
 
-            <Link
-              to="/wishlist"
-              className="topbar-action-btn"
-              aria-label="Wishlist"
-            >
-              Saved
+            <Link to="/wishlist" className="topbar-action-btn">
+              {t('nav.saved')}
               {wishlistCount > 0 && (
                 <span className="topbar-badge">{wishlistCount}</span>
               )}
@@ -81,10 +69,10 @@ export default function Navbar() {
 
             <button
               className="topbar-action-btn cart"
-              onClick={handleCartClick}
+              onClick={openDrawer}
               aria-label="Open cart"
             >
-              Cart
+              {t('nav.cart')}
               {getItemCount() > 0 && (
                 <span className="topbar-badge">{getItemCount()}</span>
               )}
@@ -93,7 +81,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
     </>
   );
