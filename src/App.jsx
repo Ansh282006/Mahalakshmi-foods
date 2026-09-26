@@ -20,6 +20,7 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import './App.css';
+import MyRewards from './pages/MyRewards';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/login" element={<><Navbar /><CustomerLogin /></>} />
           <Route path="/signup" element={<><Navbar /><CustomerSignup /></>} />
           <Route path="/my-orders" element={<><Navbar /><MyOrders /></>} />
+          <Route path="/rewards" element={<><Navbar /><MyRewards /></>} />
           <Route path="/wishlist" element={<><Navbar /><Wishlist /></>} />
           <Route path="/bulk-order" element={<><Navbar /><BulkOrder /></>} />
 

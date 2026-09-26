@@ -15,6 +15,8 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
   const [pincodeServiceable, setPincodeServiceable] = useState(null);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [userPoints, setUserPoints] = useState(0);
+  const [usePoints, setUsePoints] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -23,12 +25,31 @@ export default function Checkout() {
         name: prev.name || user.user_metadata?.full_name || '',
         phone: prev.phone || user.user_metadata?.phone || '',
       }));
+      loadPoints();
     }
   }, [user]);
 
+  async function loadPoints() {
+    const { data } = await supabase
+      .from('loyalty_points')
+      .select('points, type')
+      .eq('user_id', user.id);
+    if (data) {
+      const earned = data.filter((p) => p.type === 'earned').reduce((s, p) => s + p.points, 0);
+      const redeemed = data.filter((p) => p.type === 'redeemed').reduce((s, p) => s + p.points, 0);
+      setUserPoints(earned - redeemed);
+    }
+  }
+
   const subtotal = getTotal();
-  const discount = appliedCoupon?.discount || 0;
-  const finalTotal = Math.max(subtotal - discount, 0);
+  const couponDiscount = appliedCoupon?.discount || 0;
+
+  // Points: 100 points = ₹50
+  const maxPointsValue = Math.floor(userPoints / 100) * 50;
+  const pointsDiscount = usePoints ? Math.min(maxPointsValue, subtotal - couponDiscount) : 0;
+  const pointsUsed = usePoints ? Math.ceil(pointsDiscount / 50) * 100 : 0;
+
+  const finalTotal = Math.max(subtotal - couponDiscount - pointsDiscount, 0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +73,7 @@ export default function Checkout() {
           status: 'Pending',
           user_id: user?.id || null,
           coupon_code: appliedCoupon?.code || null,
-          discount_amount: discount,
+          discount_amount: couponDiscount + pointsDiscount,
         })
         .select()
         .single();
@@ -71,6 +92,18 @@ export default function Checkout() {
       // Increment coupon usage
       if (appliedCoupon?.code) {
         await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code });
+      }
+
+      // Deduct points if used
+      if (usePoints && pointsUsed > 0) {
+        await supabase.from('loyalty_points').insert({
+          user_id: user.id,
+          points: pointsUsed,
+          type: 'redeemed',
+          source: 'order',
+          order_id: order.id,
+          description: `Redeemed on order ${order.order_code || ''}`,
+        });
       }
 
       clearCart();
@@ -103,11 +136,10 @@ export default function Checkout() {
         {!user && (
           <div className="guest-notice">
             Checking out as a <strong>guest</strong>.{' '}
-            <a href="/login">Sign in</a> to save your details for next time.
+            <a href="/login">Sign in</a> to save details and earn loyalty points.
           </div>
         )}
 
-        {/* Order Summary */}
         <div className="checkout-summary-card">
           <h3>Order Summary</h3>
           <div className="checkout-summary-list">
@@ -125,7 +157,6 @@ export default function Checkout() {
             ))}
           </div>
 
-          {/* Coupon Input */}
           <div className="coupon-section">
             <CouponInput
               subtotal={subtotal}
@@ -135,16 +166,42 @@ export default function Checkout() {
             />
           </div>
 
-          {/* Totals */}
+          {/* Loyalty Points Redemption */}
+          {user && userPoints >= 100 && (
+            <div className="points-redeem-section">
+              <label className="points-redeem-label">
+                <input
+                  type="checkbox"
+                  checked={usePoints}
+                  onChange={(e) => setUsePoints(e.target.checked)}
+                />
+                <span className="checkmark"></span>
+                <div className="points-redeem-info">
+                  <strong>Use {pointsUsed || Math.floor(userPoints / 100) * 100} Loyalty Points</strong>
+                  <span>Save ₹{usePoints ? pointsDiscount.toFixed(0) : Math.floor(userPoints / 100) * 50}</span>
+                </div>
+              </label>
+              <div className="points-balance-note">
+                Available balance: {userPoints} points (≈ ₹{maxPointsValue})
+              </div>
+            </div>
+          )}
+
           <div className="checkout-totals">
             <div className="checkout-total-row">
               <span>Subtotal</span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
-            {discount > 0 && (
+            {couponDiscount > 0 && (
               <div className="checkout-total-row discount">
                 <span>Coupon Discount</span>
-                <span>−₹{discount.toFixed(2)}</span>
+                <span>−₹{couponDiscount.toFixed(2)}</span>
+              </div>
+            )}
+            {pointsDiscount > 0 && (
+              <div className="checkout-total-row discount">
+                <span>Points Redemption</span>
+                <span>−₹{pointsDiscount.toFixed(2)}</span>
               </div>
             )}
             <div className="checkout-total-row grand">
@@ -154,7 +211,6 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="checkout-form">
           <label>Full Name</label>
           <input
@@ -170,7 +226,6 @@ export default function Checkout() {
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             placeholder="10-digit mobile number"
             pattern="[0-9]{10}"
-            title="Please enter a valid 10-digit phone number"
             required
           />
 

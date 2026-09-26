@@ -14,10 +14,12 @@ export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Close sidebar on route change
   useEffect(() => {
     onClose();
   }, [location.pathname]);
 
+  // Lock body scroll when open
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
@@ -26,6 +28,7 @@ export default function Sidebar({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
+  // Close on Escape key
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -44,12 +47,15 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
+      {/* Backdrop */}
       <div
         className={`sidebar-backdrop ${isOpen ? 'open' : ''}`}
         onClick={onClose}
       />
 
+      {/* Sidebar Panel */}
       <aside className={`sidebar-panel ${isOpen ? 'open' : ''}`}>
+        {/* Header */}
         <div className="sidebar-header">
           <Link to="/" className="sidebar-brand" onClick={onClose}>
             <span className="sidebar-brand-name">MAHALAXMI</span>
@@ -65,6 +71,7 @@ export default function Sidebar({ isOpen, onClose }) {
           </button>
         </div>
 
+        {/* Menu */}
         <nav className="sidebar-nav">
           {/* SHOP */}
           <div className="sidebar-section">
@@ -111,12 +118,20 @@ export default function Sidebar({ isOpen, onClose }) {
             )}
 
             {user && !isAdmin && (
-              <Link
-                to="/my-orders"
-                className={`sidebar-link ${isActive('/my-orders') ? 'active' : ''}`}
-              >
-                {t('nav.myOrders')}
-              </Link>
+              <>
+                <Link
+                  to="/my-orders"
+                  className={`sidebar-link ${isActive('/my-orders') ? 'active' : ''}`}
+                >
+                  {t('nav.myOrders')}
+                </Link>
+                <Link
+                  to="/rewards"
+                  className={`sidebar-link ${isActive('/rewards') ? 'active' : ''}`}
+                >
+                  My Rewards
+                </Link>
+              </>
             )}
 
             {user && isAdmin && (
@@ -168,6 +183,7 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
         </nav>
 
+        {/* Footer */}
         <div className="sidebar-footer">
           <div className="sidebar-footer-lang">
             <LanguageSwitcher />

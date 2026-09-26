@@ -4729,3 +4729,388 @@ body { font-family: 'Roboto', sans-serif; background-color: #FDFBF7; color: #333
   border-color: #C62828 !important;
   color: #ffffff !important;
 }
+/* ============================================
+   MY REWARDS PAGE
+   ============================================ */
+.rewards-wrapper {
+  min-height: 80vh;
+  padding: 40px 0 80px;
+  background: linear-gradient(135deg, #f8fdf9 0%, #fdfbf7 50%, #fff5f5 100%);
+}
+
+.rewards-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.rewards-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.reward-stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.reward-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.reward-stat-card.points::before { background: #2E7D32; }
+.reward-stat-card.wallet::before { background: #F9A825; }
+.reward-stat-card.referrals::before { background: #C62828; }
+
+.reward-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+}
+
+.reward-stat-value {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1a2332;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.reward-stat-sub {
+  font-size: 0.82rem;
+  color: #888;
+}
+
+/* Cards */
+.rewards-card {
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+.rewards-card h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.15rem;
+  color: #1a2332;
+  margin-bottom: 12px;
+}
+
+.rewards-desc {
+  font-size: 0.92rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* Referral code display */
+.referral-code-display {
+  background: linear-gradient(135deg, #f0f9f1 0%, #e8f5e9 100%);
+  border: 2px dashed #a5d6a7;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.referral-code-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2E7D32;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.referral-code-value {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1B5E20;
+  letter-spacing: 3px;
+  margin-bottom: 16px;
+}
+
+.referral-code-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.referral-copy-btn,
+.referral-wa-btn {
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.referral-copy-btn {
+  background: white;
+  color: #2E7D32;
+  border: 1.5px solid #2E7D32;
+}
+
+.referral-copy-btn:hover {
+  background: #2E7D32;
+  color: white;
+}
+
+.referral-wa-btn {
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+}
+
+.referral-wa-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+}
+
+/* Referral history */
+.referral-history {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eef1f4;
+}
+
+.referral-history h4 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  color: #1a2332;
+  margin-bottom: 14px;
+}
+
+.referral-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.referral-history-item:last-child { border-bottom: none; }
+
+.referral-history-item > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.referral-history-item strong {
+  font-size: 0.9rem;
+  color: #1a2332;
+}
+
+.referral-history-item span {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.referral-bonus {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  color: #2E7D32;
+  font-size: 0.92rem;
+}
+
+/* Points history */
+.points-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.points-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.points-history-item:last-child { border-bottom: none; }
+
+.points-history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.points-history-info strong {
+  font-size: 0.88rem;
+  color: #1a2332;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.points-history-info > span {
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.points-history-date {
+  font-size: 0.72rem !important;
+  color: #aaa !important;
+}
+
+.points-badge {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.points-badge.earned {
+  background: #e8f5e9;
+  color: #2E7D32;
+}
+
+.points-badge.redeemed {
+  background: #ffebee;
+  color: #C62828;
+}
+
+.rewards-empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.rewards-empty p {
+  color: #888;
+  margin-bottom: 16px;
+}
+
+/* How it works */
+.how-it-works {
+  background: linear-gradient(135deg, #fafbfc 0%, #f5f7fa 100%);
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.how-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.how-number {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2E7D32;
+  opacity: 0.3;
+  line-height: 1;
+}
+
+.how-item strong {
+  font-size: 0.95rem;
+  color: #1a2332;
+}
+
+.how-item p {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.55;
+}
+
+/* Referral banner on signup */
+.referral-banner {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  border: 1.5px solid #F9A825;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 0.88rem;
+  color: #665500;
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Points redeem at checkout */
+.points-redeem-section {
+  margin: 16px 0;
+  padding: 16px;
+  background: #f0f9f1;
+  border: 1.5px solid #c8e6c9;
+  border-radius: 12px;
+}
+
+.points-redeem-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.points-redeem-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #2E7D32;
+  flex-shrink: 0;
+}
+
+.points-redeem-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.points-redeem-info strong {
+  font-size: 0.92rem;
+  color: #1B5E20;
+}
+
+.points-redeem-info span {
+  font-size: 0.8rem;
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.points-balance-note {
+  font-size: 0.78rem;
+  color: #558b2f;
+  margin-top: 8px;
+  padding-left: 32px;
+}
+
+@media (max-width: 640px) {
+  .referral-code-value { font-size: 1.5rem; letter-spacing: 2px; }
+  .rewards-card { padding: 20px; }
+  .referral-code-actions { flex-direction: column; }
+  .referral-copy-btn,
+  .referral-wa-btn { width: 100%; }
+}

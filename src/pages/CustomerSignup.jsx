@@ -1,27 +1,55 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { processReferral } from '../hooks/useReferralSignup';
+import { supabase } from '../supabaseClient';
 
 export default function CustomerSignup() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Auto-fill referral code from URL ?ref=XXXXX
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) {
+      toast.success(`Referral code ${ref} applied! 🎁`);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signUp(form.email, form.password, form.name, form.phone);
+    const referralCode = searchParams.get('ref');
 
-    setLoading(false);
+    const { data, error } = await signUp(
+      form.email,
+      form.password,
+      form.name,
+      form.phone
+    );
 
     if (error) {
       toast.error(error.message);
+      setLoading(false);
       return;
     }
 
+    // Process referral if code exists
+    if (referralCode && data?.user?.id) {
+      try {
+        await processReferral(referralCode, data.user.id, form.email);
+        toast.success('Referral bonus applied! 🎁');
+      } catch (err) {
+        console.error('Referral processing error:', err);
+      }
+    }
+
+    setLoading(false);
     toast.success('Account created! Check your email to verify.');
     navigate('/my-orders');
   };
@@ -31,6 +59,12 @@ export default function CustomerSignup() {
       <div className="auth-card">
         <h1>Create Account</h1>
         <p className="auth-subtitle">Save your details for faster checkout & order tracking.</p>
+
+        {searchParams.get('ref') && (
+          <div className="referral-banner">
+            🎁 You were referred! Sign up to get <strong>500 points (₹50 off)</strong>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <label>Full Name</label>
