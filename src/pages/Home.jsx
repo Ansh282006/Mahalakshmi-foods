@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
 import useFlyToCart from '../hooks/useFlyToCart';
+import useSEO from '../hooks/useSEO';
+import { organizationSchema } from '../utils/seo';
 import SkeletonCard from '../components/SkeletonCard';
 import RevealCard from '../components/RevealCard';
 import BrandMarquee from '../components/BrandMarquee';
@@ -17,6 +19,14 @@ export default function Home() {
   const [reviewProduct, setReviewProduct] = useState(null);
   const { addToCart } = useCart();
   const flyToCart = useFlyToCart();
+
+  // SEO
+  useSEO({
+    title: 'Mahalaxmi Krushi Prakriya Udyog — Authentic Kolhapuri Chips',
+    description:
+      'Buy freshly fried banana chips & jackfruit chips online. FSSAI certified, home delivered in Kolhapur. Cash on Delivery available.',
+    structuredData: organizationSchema(),
+  });
 
   useEffect(() => {
     async function fetchData() {
@@ -41,7 +51,10 @@ export default function Home() {
           });
           const out = {};
           Object.keys(agg).forEach((id) => {
-            out[id] = { avg: agg[id].sum / agg[id].count, count: agg[id].count };
+            out[id] = {
+              avg: agg[id].sum / agg[id].count,
+              count: agg[id].count,
+            };
           });
           setRatings(out);
         }
@@ -64,6 +77,7 @@ export default function Home() {
 
   return (
     <>
+      {/* ---------- FULL-WIDTH HERO ---------- */}
       <header className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
@@ -80,16 +94,21 @@ export default function Home() {
             <span className="hero-btn-arrow">→</span>
           </Link>
         </div>
+
         <div className="hero-orb hero-orb-1"></div>
         <div className="hero-orb hero-orb-2"></div>
         <div className="hero-orb hero-orb-3"></div>
       </header>
 
+      {/* ---------- FULL-WIDTH MARQUEE ---------- */}
       <BrandMarquee />
-      <div className="pincode-section">
-  <PincodeChecker />
-</div>
 
+      {/* ---------- PINCODE CHECKER ---------- */}
+      <div className="pincode-section">
+        <PincodeChecker />
+      </div>
+
+      {/* ---------- PRODUCT GRID ---------- */}
       <div className="app-container">
         <section className="products-section">
           <h2 className="section-title">Our Best Sellers</h2>
@@ -103,8 +122,14 @@ export default function Home() {
                     <RevealCard key={product.id} delay={index * 100}>
                       <div className={`product-card ${outOfStock ? 'is-out' : ''}`}>
                         <div className="product-image-wrap">
-                          <img src={product.image_url} alt={product.name} className="product-image" />
-                          {outOfStock && <div className="out-of-stock-badge">Out of Stock</div>}
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="product-image"
+                          />
+                          {outOfStock && (
+                            <div className="out-of-stock-badge">Out of Stock</div>
+                          )}
                         </div>
                         <div className="product-info">
                           <h3>{product.name}</h3>
@@ -123,10 +148,16 @@ export default function Home() {
                           </button>
 
                           <p className="product-price">₹{product.price}</p>
+
                           {outOfStock ? (
-                            <button className="add-to-cart-btn disabled" disabled>Out of Stock</button>
+                            <button className="add-to-cart-btn disabled" disabled>
+                              Out of Stock
+                            </button>
                           ) : (
-                            <button className="add-to-cart-btn" onClick={(e) => handleAddToCart(e, product)}>
+                            <button
+                              className="add-to-cart-btn"
+                              onClick={(e) => handleAddToCart(e, product)}
+                            >
                               Add to Cart
                             </button>
                           )}
@@ -139,8 +170,12 @@ export default function Home() {
         </section>
       </div>
 
+      {/* ---------- REVIEWS MODAL ---------- */}
       {reviewProduct && (
-        <ReviewsModal product={reviewProduct} onClose={() => setReviewProduct(null)} />
+        <ReviewsModal
+          product={reviewProduct}
+          onClose={() => setReviewProduct(null)}
+        />
       )}
     </>
   );

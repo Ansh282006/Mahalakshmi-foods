@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import PincodeChecker from '../components/PincodeChecker';
+import CouponInput from '../components/CouponInput';
 
 export default function Checkout() {
   const { cart, getTotal, clearCart } = useCart();
@@ -13,8 +14,8 @@ export default function Checkout() {
   const [form, setForm] = useState({ name: '', phone: '', address: '' });
   const [submitting, setSubmitting] = useState(false);
   const [pincodeServiceable, setPincodeServiceable] = useState(null);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
-  // Auto-fill from logged-in user
   useEffect(() => {
     if (user) {
       setForm((prev) => ({
@@ -25,11 +26,15 @@ export default function Checkout() {
     }
   }, [user]);
 
+  const subtotal = getTotal();
+  const discount = appliedCoupon?.discount || 0;
+  const finalTotal = Math.max(subtotal - discount, 0);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (pincodeServiceable === false) {
-      toast.error('Cannot place order — delivery not available at your pincode');
+      toast.error('Delivery not available at your pincode');
       return;
     }
 
@@ -43,9 +48,11 @@ export default function Checkout() {
           customer_name: form.name,
           customer_phone: form.phone,
           customer_address: form.address,
-          total_amount: getTotal(),
+          total_amount: finalTotal,
           status: 'Pending',
           user_id: user?.id || null,
+          coupon_code: appliedCoupon?.code || null,
+          discount_amount: discount,
         })
         .select()
         .single();
@@ -61,6 +68,11 @@ export default function Checkout() {
       const { error: itemsError } = await supabase.from('order_items').insert(items);
       if (itemsError) throw itemsError;
 
+      // Increment coupon usage
+      if (appliedCoupon?.code) {
+        await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code });
+      }
+
       clearCart();
       toast.success('Order placed! 🎉', { id: toastId });
       navigate(`/order-confirmed/${order.id}`);
@@ -74,9 +86,7 @@ export default function Checkout() {
     return (
       <div className="app-container">
         <h1 className="page-title">Checkout</h1>
-        <div className="empty-cart">
-          <p>Your cart is empty 😢</p>
-        </div>
+        <div className="empty-cart"><p>Your cart is empty 😢</p></div>
       </div>
     );
   }
@@ -85,13 +95,11 @@ export default function Checkout() {
     <div className="app-container">
       <h1 className="page-title">Checkout</h1>
       <div className="checkout-grid">
-        {/* Pincode Checker */}
         <PincodeChecker
           compact
           onServiceable={(isServiceable) => setPincodeServiceable(isServiceable)}
         />
 
-        {/* Guest Notice */}
         {!user && (
           <div className="guest-notice">
             Checking out as a <strong>guest</strong>.{' '}
@@ -116,13 +124,37 @@ export default function Checkout() {
               </div>
             ))}
           </div>
-          <div className="checkout-summary-total">
-            <span>Total</span>
-            <strong>₹{getTotal().toFixed(2)}</strong>
+
+          {/* Coupon Input */}
+          <div className="coupon-section">
+            <CouponInput
+              subtotal={subtotal}
+              appliedCoupon={appliedCoupon}
+              onApply={(c) => setAppliedCoupon(c)}
+              onRemove={() => setAppliedCoupon(null)}
+            />
+          </div>
+
+          {/* Totals */}
+          <div className="checkout-totals">
+            <div className="checkout-total-row">
+              <span>Subtotal</span>
+              <span>₹{subtotal.toFixed(2)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="checkout-total-row discount">
+                <span>Coupon Discount</span>
+                <span>−₹{discount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="checkout-total-row grand">
+              <span>Total</span>
+              <strong>₹{finalTotal.toFixed(2)}</strong>
+            </div>
           </div>
         </div>
 
-        {/* Checkout Form */}
+        {/* Form */}
         <form onSubmit={handleSubmit} className="checkout-form">
           <label>Full Name</label>
           <input
@@ -155,9 +187,7 @@ export default function Checkout() {
             className="checkout-btn"
             disabled={submitting || pincodeServiceable === false}
           >
-            {submitting
-              ? 'Placing Order...'
-              : `Place Order (₹${getTotal().toFixed(2)})`}
+            {submitting ? 'Placing Order...' : `Place Order (₹${finalTotal.toFixed(2)})`}
           </button>
 
           <p className="checkout-cod-note">

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /checkout
+Disallow: /order-confirmed/
+
+Sitemap: https://mahalakshmi-foods.vercel.app/sitemap.xml
