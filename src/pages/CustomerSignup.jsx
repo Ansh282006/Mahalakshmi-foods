@@ -5,6 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { processReferral } from '../hooks/useReferralSignup';
 import { supabase } from '../supabaseClient';
 
+// Generate a referral code from name
+function generateCode(name) {
+  const prefix = (name || 'USER').replace(/\s/g, '').toUpperCase().slice(0, 3);
+  const num = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}${num}`;
+}
+
 export default function CustomerSignup() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -12,7 +19,6 @@ export default function CustomerSignup() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Auto-fill referral code from URL ?ref=XXXXX
   useEffect(() => {
     const ref = searchParams.get('ref');
     if (ref) {
@@ -39,7 +45,16 @@ export default function CustomerSignup() {
       return;
     }
 
-    // Process referral if code exists
+    // Generate a referral code for the new user (client-side, safe)
+    if (data?.user?.id) {
+      const myCode = generateCode(form.name);
+      await supabase.from('referral_codes').insert({
+        user_id: data.user.id,
+        code: myCode,
+      });
+    }
+
+    // Process incoming referral code (if any)
     if (referralCode && data?.user?.id) {
       try {
         await processReferral(referralCode, data.user.id, form.email);
