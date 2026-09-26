@@ -1,20 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import useWishlist from '../hooks/useWishlist';
-import LanguageSwitcher from './LanguageSwitcher';
+import Sidebar from './Sidebar';
 
 export default function Navbar() {
   const { getItemCount, openDrawer } = useCart();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { count: wishlistCount } = useWishlist();
-  const { t } = useTranslation();
-  const location = useLocation();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -23,123 +20,81 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [location.pathname]);
-
   const handleCartClick = () => {
-    setMenuOpen(false);
     openDrawer();
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+  const handleAdminClick = () => {
+    if (user && isAdmin) {
+      navigate('/admin/dashboard');
+    }
   };
 
   return (
-    <nav className={`navbar-glass ${scrolled ? 'scrolled' : ''}`}>
-      <div className="navbar-inner">
-        <Link to="/" className="nav-logo">
-          <span className="logo-icon">🌿</span>
-          <span className="logo-text">Mahalaxmi Chips</span>
-        </Link>
-
-        <button
-          className={`hamburger ${menuOpen ? 'open' : ''}`}
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-
-        <div className={`nav-links ${menuOpen ? 'mobile-open' : ''}`}>
-          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
-            {t('nav.home')}
-          </Link>
-
-          <Link
-            to="/products"
-            className={location.pathname === '/products' ? 'active' : ''}
-          >
-            {t('nav.products')}
-          </Link>
-
-          <Link
-            to="/track"
-            className={location.pathname === '/track' ? 'active' : ''}
-          >
-            {t('nav.track')}
-          </Link>
-
-          {/* Wishlist Link */}
-          <Link
-            to="/wishlist"
-            className={location.pathname === '/wishlist' ? 'active' : ''}
-          >
-            🤍 Wishlist{' '}
-            {wishlistCount > 0 && <span className="cart-badge">{wishlistCount}</span>}
-          </Link>
-
-          {/* Bulk Order Link */}
-          <Link
-            to="/bulk-order"
-            className={location.pathname === '/bulk-order' ? 'active' : ''}
-          >
-            📦 Bulk Order
-          </Link>
-
-          {user && !isAdmin && (
-            <Link
-              to="/my-orders"
-              className={location.pathname === '/my-orders' ? 'active' : ''}
-            >
-              {t('nav.myOrders')}
-            </Link>
-          )}
-
-          {!user && (
-            <Link
-              to="/login"
-              className={location.pathname === '/login' ? 'active' : ''}
-            >
-              {t('nav.login')}
-            </Link>
-          )}
-
-          {user && isAdmin && (
-            <Link to="/admin/dashboard" className="nav-admin-btn">
-              <span className="nav-admin-icon">⚙</span>
-              {t('nav.adminPanel')}
-            </Link>
-          )}
-
-          {user && (
-            <button
-              className="nav-account-btn"
-              onClick={handleSignOut}
-              title={user.email}
-            >
-              {t('nav.signOut')}
-            </button>
-          )}
-
-          <LanguageSwitcher />
-
+    <>
+      <nav className={`topbar ${scrolled ? 'scrolled' : ''}`}>
+        <div className="topbar-inner">
+          {/* Left: Menu button */}
           <button
-            className="cart-link"
-            onClick={handleCartClick}
-            aria-label="Open cart"
+            className="topbar-menu-btn"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
           >
-            🛒 {t('nav.cart')}
-            {getItemCount() > 0 && (
-              <span className="cart-badge">{getItemCount()}</span>
-            )}
+            <span></span>
+            <span></span>
+            <span></span>
+            <span className="topbar-menu-label">MENU</span>
           </button>
+
+          {/* Center: Logo */}
+          <Link to="/" className="topbar-logo">
+            <span className="topbar-logo-name">MAHALAXMI</span>
+            <span className="topbar-logo-sub">CHIPS</span>
+          </Link>
+
+          {/* Right: Actions */}
+          <div className="topbar-actions">
+            {user && isAdmin ? (
+              <button
+                className="topbar-action-btn admin"
+                onClick={handleAdminClick}
+                aria-label="Admin Panel"
+              >
+                Admin
+              </button>
+            ) : (
+              <Link to="/track" className="topbar-action-btn">
+                Track
+              </Link>
+            )}
+
+            <Link
+              to="/wishlist"
+              className="topbar-action-btn"
+              aria-label="Wishlist"
+            >
+              Saved
+              {wishlistCount > 0 && (
+                <span className="topbar-badge">{wishlistCount}</span>
+              )}
+            </Link>
+
+            <button
+              className="topbar-action-btn cart"
+              onClick={handleCartClick}
+              aria-label="Open cart"
+            >
+              Cart
+              {getItemCount() > 0 && (
+                <span className="topbar-badge">{getItemCount()}</span>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    </>
   );
 }
