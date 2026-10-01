@@ -1,8 +1,9 @@
-﻿import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import Landing from './pages/Landing';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import Cart from './pages/Cart';
@@ -22,6 +23,8 @@ import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import AdminTeam from './pages/AdminTeam';
 import './App.css';
+import './landing.css';
+import './landing-footer.css';
 
 function App() {
   return (
@@ -30,7 +33,11 @@ function App() {
       <BrowserRouter>
         <CartDrawer />
         <Routes>
-          <Route path="/" element={<><Navbar /><Home /></>} />
+          {/* Landing (no navbar — has its own topbar) */}
+          <Route path="/" element={<Landing />} />
+
+          {/* Shop pages */}
+          <Route path="/shop" element={<><Navbar /><Home /></>} />
           <Route path="/products" element={<><Navbar /><Products /></>} />
           <Route path="/track" element={<><Navbar /><TrackOrder /></>} />
           <Route path="/cart" element={<><Navbar /><Cart /></>} />
@@ -43,6 +50,7 @@ function App() {
           <Route path="/bulk-order" element={<><Navbar /><BulkOrder /></>} />
           <Route path="/rewards" element={<><Navbar /><MyRewards /></>} />
 
+          {/* Admin */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
