@@ -1859,3 +1859,360 @@ body.dark-mode .prem-wishlist-remove {
   border-color: rgba(254, 253, 251, 0.2);
   color: var(--cream-100);
 }
+
+/* ============================================
+   BULK ORDER — PREMIUM
+   ============================================ */
+.prem-bulk-form {
+  max-width: 720px;
+  margin: var(--s-6) auto 0;
+  padding: 0 var(--s-3);
+}
+
+.prem-bulk-note {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--charcoal-500);
+  margin-top: var(--s-3);
+  letter-spacing: 0.3px;
+}
+
+/* ============================================
+   MY REWARDS — PREMIUM
+   ============================================ */
+.prem-rewards-stats {
+  max-width: 1000px;
+  margin: var(--s-5) auto 0;
+  padding: 0 var(--s-3);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-3);
+}
+
+.prem-reward-stat {
+  background: var(--cream-50);
+  border: 1px solid var(--charcoal-900);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prem-reward-stat-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--charcoal-500);
+}
+
+.prem-reward-stat-value {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--charcoal-900);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 6px 0;
+}
+
+.prem-reward-stat-sub {
+  font-size: 0.78rem;
+  color: var(--charcoal-500);
+  letter-spacing: 0.3px;
+}
+
+.prem-rewards-section {
+  max-width: 1000px;
+  margin: var(--s-6) auto 0;
+  padding: 0 var(--s-3);
+}
+
+.prem-rewards-section-head {
+  padding-bottom: var(--s-3);
+  margin-bottom: var(--s-4);
+  border-bottom: 1px solid var(--charcoal-900);
+}
+
+.prem-rewards-desc {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--charcoal-700);
+  margin-top: var(--s-2);
+  max-width: 560px;
+}
+
+.prem-rewards-h3 {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--charcoal-500);
+  margin-bottom: var(--s-3);
+}
+
+/* Referral box */
+.prem-referral-box {
+  background: var(--forest-900);
+  color: var(--cream-100);
+  padding: var(--s-5);
+  text-align: center;
+  border: 1px solid var(--forest-950);
+}
+
+.prem-referral-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold-500);
+  margin-bottom: var(--s-3);
+}
+
+.prem-referral-value {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--gold-400);
+  margin-bottom: var(--s-4);
+  line-height: 1;
+}
+
+.prem-referral-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.prem-referral-actions .prem-btn-primary {
+  border: 1px solid var(--gold-500);
+  background: transparent;
+  color: var(--gold-400);
+}
+
+.prem-referral-actions .prem-btn-primary:hover {
+  background: var(--gold-500);
+  color: var(--forest-950);
+}
+
+/* Referral history */
+.prem-referral-history {
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--cream-300);
+}
+
+.prem-referral-history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--cream-200);
+  gap: var(--s-3);
+}
+
+.prem-referral-history-row:last-child { border-bottom: none; }
+
+.prem-referral-history-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.prem-referral-history-row strong {
+  font-size: 0.92rem;
+  color: var(--charcoal-900);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prem-referral-history-row span {
+  font-size: 0.75rem;
+  color: var(--charcoal-500);
+}
+
+.prem-referral-history-points {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--forest-700);
+  white-space: nowrap;
+}
+
+/* Points history */
+.prem-points-history {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--cream-300);
+}
+
+.prem-points-history-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--cream-300);
+}
+
+.prem-points-history-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.prem-points-history-info strong {
+  font-size: 0.88rem;
+  color: var(--charcoal-900);
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.prem-points-history-info > span {
+  font-size: 0.8rem;
+  color: var(--charcoal-500);
+}
+
+.prem-points-history-date {
+  font-size: 0.72rem !important;
+  color: var(--charcoal-400) !important;
+  letter-spacing: 0.3px;
+}
+
+.prem-points-badge {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.prem-points-badge.earned {
+  color: var(--forest-700);
+  border-color: var(--forest-700);
+}
+
+.prem-points-badge.redeemed {
+  color: var(--signal-red);
+  border-color: var(--signal-red);
+}
+
+.prem-rewards-empty {
+  text-align: center;
+  padding: var(--s-6) var(--s-3);
+  background: var(--cream-50);
+  border: 1px solid var(--cream-300);
+}
+
+.prem-rewards-empty p {
+  font-size: 0.95rem;
+  color: var(--charcoal-500);
+  margin-bottom: var(--s-4);
+}
+
+/* How it works */
+.prem-how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s-3);
+}
+
+.prem-how-card {
+  background: var(--cream-50);
+  border: 1px solid var(--cream-300);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.prem-how-num {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold-500);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.prem-how-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--charcoal-900);
+  letter-spacing: -0.01em;
+}
+
+.prem-how-card p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--charcoal-700);
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .prem-rewards-stats { grid-template-columns: 1fr; }
+  .prem-how-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .prem-reward-stat-value { font-size: 2rem; }
+  .prem-referral-value { font-size: 1.75rem; letter-spacing: 3px; }
+  .prem-referral-actions { flex-direction: column; }
+  .prem-referral-actions .prem-btn-primary { width: 100%; }
+}
+
+/* Dark mode */
+body.dark-mode .prem-reward-stat {
+  background: var(--forest-900);
+  border-color: var(--gold-500);
+}
+body.dark-mode .prem-reward-stat-value { color: var(--gold-400); }
+body.dark-mode .prem-reward-stat-sub { color: rgba(254, 253, 251, 0.5); }
+body.dark-mode .prem-reward-stat-label { color: rgba(254, 253, 251, 0.5); }
+
+body.dark-mode .prem-rewards-section-head { border-bottom-color: var(--gold-500); }
+body.dark-mode .prem-rewards-desc { color: rgba(254, 253, 251, 0.7); }
+body.dark-mode .prem-rewards-h3 { color: rgba(254, 253, 251, 0.5); }
+
+body.dark-mode .prem-referral-box {
+  background: var(--forest-950);
+  border-color: var(--gold-500);
+}
+
+body.dark-mode .prem-referral-history,
+body.dark-mode .prem-points-history { border-color: rgba(254, 253, 251, 0.08); }
+body.dark-mode .prem-referral-history-row { border-bottom-color: rgba(254, 253, 251, 0.06); }
+body.dark-mode .prem-referral-history-row strong { color: var(--cream-100); }
+body.dark-mode .prem-referral-history-row span { color: rgba(254, 253, 251, 0.5); }
+body.dark-mode .prem-referral-history-points { color: var(--gold-400); }
+
+body.dark-mode .prem-points-history-row { border-bottom-color: rgba(254, 253, 251, 0.06); }
+body.dark-mode .prem-points-history-info strong { color: var(--cream-100); }
+body.dark-mode .prem-points-history-info > span { color: rgba(254, 253, 251, 0.5); }
+body.dark-mode .prem-points-badge.earned { color: var(--gold-400); border-color: var(--gold-400); }
+body.dark-mode .prem-points-badge.redeemed { color: #f87171; border-color: #f87171; }
+
+body.dark-mode .prem-rewards-empty {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.08);
+}
+body.dark-mode .prem-rewards-empty p { color: rgba(254, 253, 251, 0.6); }
+
+body.dark-mode .prem-how-card {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.08);
+}
+body.dark-mode .prem-how-card h3 { color: var(--cream-50); }
+body.dark-mode .prem-how-card p { color: rgba(254, 253, 251, 0.7); }
+body.dark-mode .prem-how-num { color: var(--gold-400); }
+
+body.dark-mode .prem-bulk-note { color: rgba(254, 253, 251, 0.5); }
