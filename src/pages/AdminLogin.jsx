@@ -17,7 +17,6 @@ export default function AdminLogin() {
   const [shake, setShake] = useState(false);
   const navigate = useNavigate();
 
-  // Check if already logged in as admin → redirect
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session?.user?.email === ADMIN_EMAIL) {
@@ -26,8 +25,6 @@ export default function AdminLogin() {
         setCheckingSession(false);
       }
     });
-
-    // Prefill remembered email
     const saved = localStorage.getItem(REMEMBER_KEY);
     if (saved) {
       setEmail(saved);
@@ -45,7 +42,6 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
 
-    // STEP 1: Enforce admin-only access
     if (email.trim().toLowerCase() !== ADMIN_EMAIL) {
       setError('This login is for administrators only.');
       triggerShake();
@@ -53,7 +49,6 @@ export default function AdminLogin() {
       return;
     }
 
-    // STEP 2: Try the login
     const { data, error: loginError } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
@@ -66,7 +61,6 @@ export default function AdminLogin() {
       return;
     }
 
-    // STEP 3: Verify the user really is the admin
     if (data.user?.email !== ADMIN_EMAIL) {
       await supabase.auth.signOut();
       setError('You are not authorized as an admin.');
@@ -75,72 +69,89 @@ export default function AdminLogin() {
       return;
     }
 
-    // STEP 4: Save email if "Remember me"
-    if (remember) {
-      localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
-    } else {
-      localStorage.removeItem(REMEMBER_KEY);
-    }
+    if (remember) localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
+    else localStorage.removeItem(REMEMBER_KEY);
 
-    toast.success('Welcome back, Admin! 🌿');
+    toast.success('Welcome back, Admin');
     navigate('/admin/dashboard');
   };
 
   if (checkingSession) {
     return (
-      <div className="admin-login-wrapper">
-        <div className="admin-login-loading">
-          <div className="admin-login-spinner"></div>
-          <p>Checking session...</p>
+      <div className="prem-admin-login" style={{ gridTemplateColumns: '1fr' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--gold-400)',
+          fontFamily: 'var(--font-display)',
+          letterSpacing: '2px',
+        }}>
+          Loading...
         </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-login-wrapper">
-      {/* Decorative orbs */}
-      <div className="admin-orb admin-orb-1"></div>
-      <div className="admin-orb admin-orb-2"></div>
+    <div className="prem-admin-login">
+      {/* LEFT — BRAND */}
+      <aside className="prem-admin-login-brand">
+        <Link to="/" className="prem-admin-login-logo" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <span className="prem-admin-login-mark">M</span>
+          <span className="prem-admin-login-brand-text">
+            MAHALAXMI
+            <em>KRUSHI PRAKRIYA UDYOG</em>
+          </span>
+        </Link>
 
-      <div className="admin-login-container">
-        {/* Brand header */}
-        <div className="admin-brand">
-          <div className="admin-brand-icon">🌿</div>
-          <h1 className="admin-brand-title">Mahalaxmi Chips</h1>
-          <p className="admin-brand-subtitle">Administration Portal</p>
+        <div className="prem-admin-login-copy">
+          <span className="prem-kicker" style={{ color: 'var(--gold-500)', borderBottomColor: 'var(--gold-500)' }}>
+            ADMIN ACCESS
+          </span>
+          <h1 className="prem-admin-login-title">
+            The control room, <em>simplified.</em>
+          </h1>
+          <p className="prem-admin-login-desc">
+            Manage orders, monitor stock, track revenue, and grow your business
+            from one place. Built for Mahalaxmi Chips by Mahalaxmi Chips.
+          </p>
         </div>
 
-        {/* Login card */}
-        <div className={`admin-login-card ${shake ? 'shake' : ''}`}>
-          <div className="admin-login-header">
-            <h2>🔐 Admin Login</h2>
-            <p>Enter your credentials to access the dashboard</p>
-          </div>
+        <div className="prem-admin-login-secure">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span>Restricted access · Admin credentials required</span>
+        </div>
+      </aside>
+
+      {/* RIGHT — FORM */}
+      <main className="prem-admin-login-form-side">
+        <div className={`prem-admin-login-form-inner prem-admin-login-card ${shake ? 'shake' : ''}`}>
+          <span className="prem-kicker">SIGN IN</span>
+          <h2 className="prem-admin-login-form-title">Admin Login</h2>
+          <p className="prem-admin-login-form-sub">
+            Enter your credentials to access the dashboard.
+          </p>
 
           <form onSubmit={handleLogin}>
-            {/* Email */}
-            <div className="admin-field">
+            <div className="prem-field">
               <label>Email Address</label>
-              <div className="admin-input-wrap">
-                <span className="input-icon">✉</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@mahalaxmi.com"
-                  autoComplete="email"
-                  required
-                  disabled={loading}
-                />
-              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@mahalaxmi.com"
+                autoComplete="email"
+                required
+                disabled={loading}
+              />
             </div>
 
-            {/* Password */}
-            <div className="admin-field">
+            <div className="prem-field">
               <label>Password</label>
-              <div className="admin-input-wrap">
-                <span className="input-icon">🔒</span>
+              <div className="prem-password-wrap">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -152,69 +163,57 @@ export default function AdminLogin() {
                 />
                 <button
                   type="button"
-                  className="password-toggle"
+                  className="prem-password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
-                  title={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? '👁' : '👁‍🗨'}
+                  {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
             </div>
 
-            {/* Remember me */}
-            <div className="admin-remember">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={remember}
-                  onChange={(e) => setRemember(e.target.checked)}
-                  disabled={loading}
-                />
-                <span className="checkmark"></span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: 'var(--s-3)' }}>
+              <input
+                type="checkbox"
+                id="remember"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: 'var(--forest-700)' }}
+              />
+              <label htmlFor="remember" style={{ fontSize: '0.85rem', color: 'var(--charcoal-700)', cursor: 'pointer' }}>
                 Remember my email
               </label>
             </div>
 
-            {/* Error message */}
             {error && (
-              <div className="admin-error">
-                <span className="error-icon">⚠</span>
+              <div className="prem-admin-login-error">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
                 <span>{error}</span>
               </div>
             )}
 
-            {/* Submit button */}
-            <button type="submit" className="admin-submit-btn" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="btn-spinner"></span>
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <span className="btn-arrow">→</span>
-                </>
-              )}
+            <button
+              type="submit"
+              className="prem-btn-primary"
+              disabled={loading}
+              style={{ width: '100%', padding: '18px' }}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="admin-login-footer">
-            <p className="support-line">
-              Having trouble? Call <strong>7774982725</strong>
-            </p>
-            <Link to="/" className="back-home-link">
-              ← Back to Store
-            </Link>
-          </div>
+          <Link to="/" className="prem-admin-login-back">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to Store
+          </Link>
         </div>
-
-        {/* Secure note */}
-        <p className="admin-secure-note">
-          🔒 This is a secure admin area. Unauthorized access is prohibited.
-        </p>
-      </div>
+      </main>
     </div>
   );
 }

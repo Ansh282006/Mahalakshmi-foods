@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
+import AdminSidebar from '../components/AdminSidebar';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ orders: 0, revenue: 0, products: 0, pending: 0 });
@@ -33,196 +33,166 @@ export default function AdminDashboard() {
         });
         setRecentOrders(orders.slice(-5).reverse());
       }
-
       if (products) {
-        setLowStock(
-          products.filter((p) => p.stock > 0 && p.stock <= (p.low_stock_threshold || 10))
-        );
+        setLowStock(products.filter((p) => p.stock > 0 && p.stock <= (p.low_stock_threshold || 10)));
         setOutOfStock(products.filter((p) => p.stock === 0));
       }
     }
     fetchData();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    if (!confirm('Log out of the admin panel?')) return;
-    await supabase.auth.signOut();
-    toast.success('Logged out');
-    navigate('/admin');
-  };
-
   const totalAlerts = lowStock.length + outOfStock.length;
 
+  const sidebarCounts = {
+    orders: stats.pending,
+    lowstock: totalAlerts,
+  };
+
   return (
-    <div className="admin-container">
-      {/* ---------- SIDEBAR ---------- */}
-      <aside className="admin-sidebar">
-        <h2>🌿 Admin</h2>
-        <nav>
-          <Link to="/admin/dashboard" className="active">📊 Dashboard</Link>
-          <Link to="/admin/orders">📦 Orders</Link>
-          <Link to="/admin/products">🍌 Products</Link>
-          <Link to="/admin/team">Team</Link>
-          <Link to="/">🏠 View Site</Link>
-        </nav>
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
-      </aside>
+    <div className="prem-admin">
+      <AdminSidebar counts={sidebarCounts} active="/admin/dashboard" />
 
-      {/* ---------- MAIN CONTENT ---------- */}
-      <main className="admin-main">
-        {/* Top action bar */}
-        <div className="admin-top-bar">
-          <div className="admin-top-left">
-            <h1>Dashboard</h1>
-            {adminEmail && (
-              <p className="admin-welcome">
-                Signed in as <strong>{adminEmail}</strong>
-              </p>
-            )}
+      <main className="prem-admin-main">
+        <header className="prem-admin-topbar">
+          <div>
+            <span className="prem-kicker">OVERVIEW</span>
+            <h1 className="prem-admin-page-title">
+              Welcome back, <em>Admin.</em>
+            </h1>
+            <p className="prem-admin-page-sub">
+              Signed in as <strong>{adminEmail}</strong>
+            </p>
           </div>
+          <div className="prem-admin-top-actions">
+            <Link to="/" className="prem-admin-action">View Store</Link>
+            <Link to="/admin/orders" className="prem-admin-action primary">Manage Orders</Link>
+          </div>
+        </header>
 
-          <div className="admin-top-actions">
-            <Link to="/" className="admin-top-btn view-store">
-              <span className="btn-icon">🏠</span>
-              <span>View Store</span>
-            </Link>
-            <button className="admin-top-btn logout" onClick={handleLogout}>
-              <span className="btn-icon">↪</span>
-              <span>Logout</span>
-            </button>
+        {/* STATS */}
+        <div className="prem-admin-stats">
+          <div className="prem-admin-stat">
+            <span className="prem-admin-stat-label">Total Orders</span>
+            <span className="prem-admin-stat-value">{stats.orders}</span>
+            <span className="prem-admin-stat-sub">All-time orders received</span>
+          </div>
+          <div className="prem-admin-stat gold">
+            <span className="prem-admin-stat-label">Total Revenue</span>
+            <span className="prem-admin-stat-value">₹{stats.revenue.toFixed(0)}</span>
+            <span className="prem-admin-stat-sub">Cash on Delivery</span>
+          </div>
+          <div className="prem-admin-stat">
+            <span className="prem-admin-stat-label">Products</span>
+            <span className="prem-admin-stat-value">{stats.products}</span>
+            <span className="prem-admin-stat-sub">Active in catalog</span>
+          </div>
+          <div className={`prem-admin-stat ${stats.pending > 0 ? 'alert' : ''}`}>
+            <span className="prem-admin-stat-label">Pending Orders</span>
+            <span className="prem-admin-stat-value">{stats.pending}</span>
+            <span className="prem-admin-stat-sub">Need attention</span>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <p>Total Orders</p>
-            <h2>{stats.orders}</h2>
-          </div>
-          <div className="stat-card">
-            <p>Total Revenue</p>
-            <h2>₹{stats.revenue.toFixed(2)}</h2>
-          </div>
-          <div className="stat-card">
-            <p>Products</p>
-            <h2>{stats.products}</h2>
-          </div>
-          <div className="stat-card highlight">
-            <p>Pending Orders</p>
-            <h2>{stats.pending}</h2>
-          </div>
-        </div>
-
-        {/* Stock Alerts */}
+        {/* ALERT BANNER */}
         {totalAlerts > 0 && (
-          <div className="stock-alert-banner">
-            <div className="alert-icon">⚠️</div>
-            <div className="alert-content">
+          <div className="prem-admin-alert">
+            <div className="prem-admin-alert-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <div className="prem-admin-alert-text">
               <strong>
                 {totalAlerts} stock {totalAlerts === 1 ? 'alert' : 'alerts'} need attention
               </strong>
-              <p>
+              <span>
                 {outOfStock.length > 0 && `${outOfStock.length} out of stock`}
                 {outOfStock.length > 0 && lowStock.length > 0 && ' · '}
                 {lowStock.length > 0 && `${lowStock.length} running low`}
-              </p>
+              </span>
             </div>
-            <Link to="/admin/products" className="alert-action">
-              Manage Stock →
-            </Link>
-          <Link to="/admin/team">Team</Link>
+            <Link to="/admin/products" className="prem-admin-alert-action">Manage Stock</Link>
           </div>
         )}
 
-        {/* Low Stock */}
+        {/* LOW STOCK */}
         {lowStock.length > 0 && (
-          <>
-            <h2 className="section-heading">🟡 Low Stock</h2>
-            <div className="stock-list">
-              {lowStock.map((p) => (
-                <div key={p.id} className="stock-item low">
-                  <img src={p.image_url} alt={p.name} />
-                  <div className="stock-item-info">
-                    <strong>{p.name}</strong>
-                    <span>{p.weight}</span>
-                  </div>
-                  <div className="stock-item-qty">
-                    <span className="stock-number">{p.stock}</span>
-                    <small>left</small>
-                  </div>
-                </div>
-              ))}
+          <section className="prem-admin-section">
+            <h2 className="prem-admin-section-title">
+              Low Stock <em>Warning</em>
+              <span className="prem-admin-section-count">{lowStock.length} products</span>
+            </h2>
+            <div className="prem-admin-table-wrap">
+              <table className="prem-admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Weight</th>
+                    <th>Category</th>
+                    <th>Stock Left</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lowStock.map((p) => (
+                    <tr key={p.id}>
+                      <td>{p.name}</td>
+                      <td>{p.weight}</td>
+                      <td>{p.category}</td>
+                      <td><strong>{p.stock}</strong></td>
+                      <td><span className="prem-admin-badge pending">Low</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </>
+          </section>
         )}
 
-        {/* Out of Stock */}
-        {outOfStock.length > 0 && (
-          <>
-            <h2 className="section-heading">🔴 Out of Stock</h2>
-            <div className="stock-list">
-              {outOfStock.map((p) => (
-                <div key={p.id} className="stock-item out">
-                  <img src={p.image_url} alt={p.name} />
-                  <div className="stock-item-info">
-                    <strong>{p.name}</strong>
-                    <span>{p.weight}</span>
-                  </div>
-                  <div className="stock-item-qty">
-                    <span className="stock-number">0</span>
-                    <small>left</small>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Recent Orders */}
-        <h2 className="section-heading">Recent Orders</h2>
-        <div className="orders-table-wrapper">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Total</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((o) => (
-                <tr key={o.id}>
-                  <td>
-                    <span className="order-code">{o.order_code || '—'}</span>
-                  </td>
-                  <td>{new Date(o.created_at).toLocaleDateString()}</td>
-                  <td>{o.customer_name}</td>
-                  <td>₹{o.total_amount}</td>
-                  <td>
-                    <span
-                      className={`status-badge status-${o.status
-                        .toLowerCase()
-                        .replace(/\s+/g, '-')}`}
-                    >
-                      {o.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {recentOrders.length === 0 && (
+        {/* RECENT ORDERS */}
+        <section className="prem-admin-section">
+          <h2 className="prem-admin-section-title">
+            Recent <em>Orders</em>
+            <Link to="/admin/orders" className="prem-admin-section-count" style={{ textDecoration: 'none' }}>
+              View All →
+            </Link>
+          </h2>
+          <div className="prem-admin-table-wrap">
+            <table className="prem-admin-table">
+              <thead>
                 <tr>
-                  <td colSpan="5" className="empty-row">
-                    No orders yet
-                  </td>
+                  <th>Order Code</th>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Total</th>
+                  <th>Status</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {recentOrders.map((o) => (
+                  <tr key={o.id}>
+                    <td className="order-code-cell">{o.order_code || '—'}</td>
+                    <td>{new Date(o.created_at).toLocaleDateString('en-IN')}</td>
+                    <td>{o.customer_name}</td>
+                    <td className="revenue-cell">₹{o.total_amount}</td>
+                    <td>
+                      <span className={`prem-admin-badge ${o.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                        {o.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {recentOrders.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="empty-row">No orders yet</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </main>
     </div>
   );

@@ -28,7 +28,8 @@ import './App.css';           /* base / legacy styles   */
 import './landing.css';       /* landing page            */
 import './landing-footer.css';/* full footer             */
 import './premium.css';       /* shared premium system   */
-import './premium-pages.css'; /* page-specific premium   */
+import './premium-pages.css';
+import './premium-admin.css'; /* page-specific premium   */
 
 function App() {
   return (
