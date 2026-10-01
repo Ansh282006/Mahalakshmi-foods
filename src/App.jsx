@@ -22,9 +22,13 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import AdminTeam from './pages/AdminTeam';
-import './App.css';
-import './landing.css';
-import './landing-footer.css';
+
+/* CSS imports — order matters */
+import './App.css';           /* base / legacy styles   */
+import './landing.css';       /* landing page            */
+import './landing-footer.css';/* full footer             */
+import './premium.css';       /* shared premium system   */
+import './premium-pages.css'; /* page-specific premium   */
 
 function App() {
   return (
@@ -33,10 +37,8 @@ function App() {
       <BrowserRouter>
         <CartDrawer />
         <Routes>
-          {/* Landing (no navbar — has its own topbar) */}
           <Route path="/" element={<Landing />} />
 
-          {/* Shop pages */}
           <Route path="/shop" element={<><Navbar /><Home /></>} />
           <Route path="/products" element={<><Navbar /><Products /></>} />
           <Route path="/track" element={<><Navbar /><TrackOrder /></>} />
@@ -50,7 +52,6 @@ function App() {
           <Route path="/bulk-order" element={<><Navbar /><BulkOrder /></>} />
           <Route path="/rewards" element={<><Navbar /><MyRewards /></>} />
 
-          {/* Admin */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
