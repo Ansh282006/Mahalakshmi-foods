@@ -4,7 +4,6 @@ import { supabase } from '../supabaseClient';
 export default function PincodeChecker({ compact = false, onServiceable }) {
   const [pincode, setPincode] = useState('');
   const [status, setStatus] = useState(null);
-  // status: null | 'checking' | 'yes' | 'no' | 'error'
   const [result, setResult] = useState(null);
 
   const handleCheck = async (e) => {
@@ -15,7 +14,6 @@ export default function PincodeChecker({ compact = false, onServiceable }) {
       setResult({ message: 'Please enter a valid 6-digit pincode.' });
       return;
     }
-
     setStatus('checking');
     setResult(null);
 
@@ -34,46 +32,38 @@ export default function PincodeChecker({ compact = false, onServiceable }) {
 
     if (data) {
       setStatus('yes');
-      setResult({
-        area: data.area,
-        days: data.delivery_days,
-      });
+      setResult({ area: data.area, days: data.delivery_days });
       if (onServiceable) onServiceable(true, pin);
     } else {
       setStatus('no');
-      setResult({
-        message: "Sorry, we don't deliver here yet.",
-      });
+      setResult({ message: "Sorry, we do not deliver here yet." });
       if (onServiceable) onServiceable(false, pin);
     }
   };
 
   return (
-    <div className={`pincode-checker ${compact ? 'compact' : ''}`}>
+    <div className={`prem-pincode ${compact ? 'compact' : ''}`}>
       {!compact && (
-        <div className="pincode-header">
-          <span className="pincode-icon">📍</span>
-          <div>
-            <h4>Delivery Availability</h4>
-            <p className="pincode-subtitle">
-              Check if we deliver to your pincode
-            </p>
-          </div>
+        <div className="prem-pincode-head">
+          <span className="prem-kicker">DELIVERY CHECK</span>
+          <h3 className="prem-pincode-title">
+            Do we deliver to <em>your area?</em>
+          </h3>
         </div>
       )}
 
-      <form onSubmit={handleCheck} className="pincode-form">
+      <form onSubmit={handleCheck} className="prem-pincode-form">
         <input
           type="text"
           value={pincode}
           onChange={(e) => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
           placeholder="Enter 6-digit pincode"
-          className="pincode-input"
+          className="prem-pincode-input"
           maxLength={6}
         />
         <button
           type="submit"
-          className="pincode-btn"
+          className="prem-pincode-btn"
           disabled={status === 'checking' || pincode.length !== 6}
         >
           {status === 'checking' ? '...' : 'Check'}
@@ -81,18 +71,16 @@ export default function PincodeChecker({ compact = false, onServiceable }) {
       </form>
 
       {status === 'yes' && result && (
-        <div className="pincode-result success">
-          <span className="result-icon">✅</span>
+        <div className="prem-pincode-result success">
           <div>
-            <strong>We deliver to {result.area}!</strong>
+            <strong>We deliver to {result.area}</strong>
             <span>Estimated delivery in {result.days} {result.days === 1 ? 'day' : 'days'}</span>
           </div>
         </div>
       )}
 
       {status === 'no' && result && (
-        <div className="pincode-result fail">
-          <span className="result-icon">❌</span>
+        <div className="prem-pincode-result fail">
           <div>
             <strong>{result.message}</strong>
             <span>Call us at 7774982725 to check if we can arrange delivery</span>
@@ -101,8 +89,7 @@ export default function PincodeChecker({ compact = false, onServiceable }) {
       )}
 
       {status === 'error' && result && (
-        <div className="pincode-result warn">
-          <span className="result-icon">⚠️</span>
+        <div className="prem-pincode-result warn">
           <div>
             <strong>{result.message}</strong>
           </div>
