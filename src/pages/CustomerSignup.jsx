@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 import { processReferral } from '../hooks/useReferralSignup';
 import { supabase } from '../supabaseClient';
 
-// Generate a referral code from name
 function generateCode(name) {
   const prefix = (name || 'USER').replace(/\s/g, '').toUpperCase().slice(0, 3);
   const num = Math.floor(1000 + Math.random() * 9000);
@@ -14,30 +13,23 @@ function generateCode(name) {
 
 export default function CustomerSignup() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const referralCode = searchParams.get('ref');
+
   useEffect(() => {
-    const ref = searchParams.get('ref');
-    if (ref) {
-      toast.success(`Referral code ${ref} applied! 🎁`);
-    }
+    if (referralCode) toast.success(`Referral code ${referralCode} applied`);
   }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const referralCode = searchParams.get('ref');
-
-    const { data, error } = await signUp(
-      form.email,
-      form.password,
-      form.name,
-      form.phone
-    );
+    const { data, error } = await signUp(form.email, form.password, form.name, form.phone);
 
     if (error) {
       toast.error(error.message);
@@ -45,7 +37,6 @@ export default function CustomerSignup() {
       return;
     }
 
-    // Generate a referral code for the new user (client-side, safe)
     if (data?.user?.id) {
       const myCode = generateCode(form.name);
       await supabase.from('referral_codes').insert({
@@ -54,79 +45,144 @@ export default function CustomerSignup() {
       });
     }
 
-    // Process incoming referral code (if any)
     if (referralCode && data?.user?.id) {
       try {
         await processReferral(referralCode, data.user.id, form.email);
-        toast.success('Referral bonus applied! 🎁');
+        toast.success('Referral bonus applied');
       } catch (err) {
         console.error('Referral processing error:', err);
       }
     }
 
     setLoading(false);
-    toast.success('Account created! Check your email to verify.');
+    toast.success('Account created');
     navigate('/my-orders');
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-card">
-        <h1>Create Account</h1>
-        <p className="auth-subtitle">Save your details for faster checkout & order tracking.</p>
+    <div className="prem-auth-page">
+      <div className="prem-auth-layout reverse">
+        <aside className="prem-auth-brand">
+          <Link to="/" className="prem-auth-brand-logo">
+            <span className="prem-auth-brand-mark">M</span>
+            <span className="prem-auth-brand-text">
+              MAHALAXMI<em>CHIPS</em>
+            </span>
+          </Link>
 
-        {searchParams.get('ref') && (
-          <div className="referral-banner">
-            🎁 You were referred! Sign up to get <strong>500 points (₹50 off)</strong>
+          <div className="prem-auth-brand-copy">
+            <span className="prem-kicker" style={{ color: 'var(--gold-500)', borderBottomColor: 'var(--gold-500)' }}>CREATE ACCOUNT</span>
+            <h2 className="prem-auth-brand-title">
+              Join the <em>Mahalaxmi</em> family.
+            </h2>
+            <p>
+              Create your account in 30 seconds. Get 100% faster checkout,
+              track orders live, and earn loyalty points on every purchase.
+            </p>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit}>
-          <label>Full Name</label>
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Ansh Patil"
-            required
-          />
+          <ul className="prem-auth-brand-list">
+            <li>
+              <span className="prem-auth-check">✓</span>
+              <span>Personal order history</span>
+            </li>
+            <li>
+              <span className="prem-auth-check">✓</span>
+              <span>Loyalty points on every order</span>
+            </li>
+            <li>
+              <span className="prem-auth-check">✓</span>
+              <span>Referral rewards (₹50 per friend)</span>
+            </li>
+            <li>
+              <span className="prem-auth-check">✓</span>
+              <span>Early access to new flavours</span>
+            </li>
+          </ul>
+        </aside>
 
-          <label>Phone Number</label>
-          <input
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="10-digit mobile"
-            pattern="[0-9]{10}"
-            title="Enter a valid 10-digit phone number"
-            required
-          />
+        <main className="prem-auth-form-side">
+          <div className="prem-auth-form-inner">
+            <span className="prem-kicker">NEW ACCOUNT</span>
+            <h1 className="prem-auth-title">Create your account.</h1>
+            <p className="prem-auth-sub">
+              Fill in your details to get started.
+            </p>
 
-          <label>Email</label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            placeholder="you@example.com"
-            required
-          />
+            {referralCode && (
+              <div className="prem-auth-referral">
+                <strong>Referral applied: {referralCode}</strong>
+                <span>You will get 500 loyalty points on signup</span>
+              </div>
+            )}
 
-          <label>Password</label>
-          <input
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder="Minimum 6 characters"
-            minLength={6}
-            required
-          />
+            <form onSubmit={handleSubmit} className="prem-auth-form">
+              <div className="prem-field">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Ansh Patil"
+                  required
+                />
+              </div>
 
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
+              <div className="prem-field">
+                <label>Phone Number</label>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                  placeholder="10-digit mobile number"
+                  pattern="[0-9]{10}"
+                  required
+                />
+              </div>
 
-        <p className="auth-switch">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
+              <div className="prem-field">
+                <label>Email Address</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+
+              <div className="prem-field">
+                <label>Password</label>
+                <div className="prem-password-wrap">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    placeholder="Minimum 6 characters"
+                    minLength={6}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="prem-password-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" className="prem-btn-primary" disabled={loading} style={{ width: '100%', padding: '18px' }}>
+                {loading ? 'Creating account...' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="prem-auth-switch">
+              <span>Already have an account?</span>
+              <Link to="/login">Sign in</Link>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
