@@ -1765,3 +1765,252 @@ body.dark-mode .prem-admin-url-fallback input {
   color: var(--cream-100);
 }
 body.dark-mode .prem-admin-modal-actions { border-top-color: rgba(254, 253, 251, 0.08); }
+
+/* ============================================
+   ADMIN — RANGE PICKER (Analytics)
+   ============================================ */
+.prem-admin-range {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--charcoal-900);
+}
+
+.prem-admin-range-btn {
+  padding: 12px 18px;
+  background: var(--cream-50);
+  border: none;
+  border-right: 1px solid var(--charcoal-900);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--charcoal-900);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.prem-admin-range-btn:last-child { border-right: none; }
+.prem-admin-range-btn:hover { background: var(--cream-200); }
+.prem-admin-range-btn.active { background: var(--charcoal-900); color: var(--cream-100); }
+
+/* Chart wrapper */
+.prem-admin-chart {
+  background: var(--cream-50);
+  border: 1px solid var(--cream-300);
+  padding: var(--s-3);
+  min-height: 240px;
+}
+
+.prem-admin-chart-empty {
+  text-align: center;
+  padding: 80px 20px;
+  font-size: 0.9rem;
+  color: var(--charcoal-400);
+  font-style: italic;
+}
+
+.prem-admin-chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-4);
+  margin-bottom: var(--s-5);
+}
+
+.prem-admin-loading {
+  text-align: center;
+  padding: var(--s-7) var(--s-3);
+  font-size: 0.9rem;
+  color: var(--charcoal-500);
+  font-style: italic;
+}
+
+/* Recharts overrides */
+.prem-admin-chart .recharts-text {
+  font-family: var(--font-body) !important;
+}
+
+/* ============================================
+   ADMIN — TEAM PAGE
+   ============================================ */
+.prem-admin-add-form-wrap {
+  background: var(--cream-50);
+  border: 1px solid var(--cream-300);
+  padding: var(--s-4);
+}
+
+.prem-admin-add-desc {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--charcoal-700);
+  margin-bottom: var(--s-3);
+}
+
+.prem-admin-add-desc strong {
+  color: var(--forest-800);
+  font-weight: 700;
+  background: var(--cream-200);
+  padding: 1px 8px;
+}
+
+.prem-admin-add-form {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--charcoal-900);
+  max-width: 560px;
+}
+
+.prem-admin-add-form input {
+  flex: 1;
+  padding: 14px 18px;
+  border: none;
+  background: var(--cream-50);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--charcoal-900);
+}
+
+.prem-admin-add-form input:focus { outline: none; }
+.prem-admin-add-form input::placeholder { color: var(--charcoal-300); }
+
+.prem-admin-add-form .prem-admin-action {
+  border: none;
+  border-left: 1px solid var(--charcoal-900);
+  padding: 14px 24px;
+}
+
+.prem-admin-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prem-admin-team-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--cream-50);
+  border: 1px solid var(--cream-300);
+  transition: all 0.2s ease;
+  flex-wrap: wrap;
+}
+
+.prem-admin-team-card:hover {
+  border-color: var(--forest-700);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 61, 46, 0.06);
+}
+
+.prem-admin-team-avatar {
+  width: 52px;
+  height: 52px;
+  background: var(--forest-900);
+  color: var(--gold-400);
+  border: 1.5px solid var(--gold-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.prem-admin-team-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.prem-admin-team-email {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--charcoal-900);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prem-admin-team-role {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--forest-700);
+}
+
+.prem-admin-team-date {
+  font-size: 0.75rem;
+  color: var(--charcoal-500);
+}
+
+.prem-admin-team-card .prem-admin-action {
+  padding: 10px 18px;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .prem-admin-chart-row { grid-template-columns: 1fr; gap: var(--s-4); }
+  .prem-admin-range { flex-wrap: wrap; }
+  .prem-admin-range-btn { flex: 1; padding: 10px 12px; font-size: 0.62rem; }
+}
+
+@media (max-width: 640px) {
+  .prem-admin-add-form { flex-direction: column; border: none; }
+  .prem-admin-add-form input { border: 1px solid var(--charcoal-900); margin-bottom: 8px; }
+  .prem-admin-add-form .prem-admin-action { border: 1px solid var(--charcoal-900); width: 100%; justify-content: center; }
+
+  .prem-admin-team-card { flex-direction: column; align-items: flex-start; }
+  .prem-admin-team-card .prem-admin-action { width: 100%; justify-content: center; margin-top: 8px; }
+}
+
+/* Dark mode */
+body.dark-mode .prem-admin-range { border-color: rgba(254, 253, 251, 0.2); }
+body.dark-mode .prem-admin-range-btn {
+  background: var(--forest-900);
+  border-right-color: rgba(254, 253, 251, 0.15);
+  color: var(--cream-100);
+}
+body.dark-mode .prem-admin-range-btn:hover { background: rgba(254, 253, 251, 0.06); }
+body.dark-mode .prem-admin-range-btn.active { background: var(--gold-500); color: var(--forest-950); }
+
+body.dark-mode .prem-admin-chart {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.08);
+}
+body.dark-mode .prem-admin-chart-empty { color: rgba(254, 253, 251, 0.4); }
+body.dark-mode .prem-admin-loading { color: rgba(254, 253, 251, 0.5); }
+
+body.dark-mode .prem-admin-add-form-wrap {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.08);
+}
+body.dark-mode .prem-admin-add-desc { color: rgba(254, 253, 251, 0.7); }
+body.dark-mode .prem-admin-add-desc strong { background: rgba(201, 162, 39, 0.15); color: var(--gold-400); }
+body.dark-mode .prem-admin-add-form { border-color: rgba(254, 253, 251, 0.2); }
+body.dark-mode .prem-admin-add-form input {
+  background: var(--forest-900);
+  color: var(--cream-100);
+}
+body.dark-mode .prem-admin-add-form .prem-admin-action { border-left-color: rgba(254, 253, 251, 0.2); }
+
+body.dark-mode .prem-admin-team-card {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.08);
+}
+body.dark-mode .prem-admin-team-card:hover { border-color: var(--gold-500); }
+body.dark-mode .prem-admin-team-avatar {
+  background: var(--forest-950);
+  color: var(--gold-400);
+}
+body.dark-mode .prem-admin-team-email { color: var(--cream-50); }
+body.dark-mode .prem-admin-team-role { color: var(--gold-400); }
+body.dark-mode .prem-admin-team-date { color: rgba(254, 253, 251, 0.5); }

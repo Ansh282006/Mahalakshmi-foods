@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import {
   ResponsiveContainer,
   LineChart, Line,
   BarChart, Bar,
   PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts';
 import { supabase } from '../supabaseClient';
+import AdminSidebar from '../components/AdminSidebar';
 
 const RANGE_OPTIONS = [
-  { label: '7 days', value: 7 },
-  { label: '30 days', value: 30 },
-  { label: '90 days', value: 90 },
-  { label: 'All time', value: 3650 },
+  { label: '7 DAYS', value: 7 },
+  { label: '30 DAYS', value: 30 },
+  { label: '90 DAYS', value: 90 },
+  { label: 'ALL TIME', value: 3650 },
 ];
 
-const CATEGORY_COLORS = ['#2E7D32', '#F9A825', '#C62828', '#1565C0', '#6a1b9a'];
+const CATEGORY_COLORS = ['#14513E', '#C9A227', '#B8341F', '#1B6B50', '#8B5E3C'];
 
 export default function AdminAnalytics() {
   const [range, setRange] = useState(30);
@@ -47,13 +47,10 @@ export default function AdminAnalytics() {
 
     const { data: prods } = await supabase.from('products').select('*');
 
-    let orderIds = (ords || []).map((o) => o.id);
     let itms = [];
+    const orderIds = (ords || []).map((o) => o.id);
     if (orderIds.length > 0) {
-      const { data } = await supabase
-        .from('order_items')
-        .select('*')
-        .in('order_id', orderIds);
+      const { data } = await supabase.from('order_items').select('*').in('order_id', orderIds);
       itms = data || [];
     }
 
@@ -63,28 +60,25 @@ export default function AdminAnalytics() {
     setLoading(false);
   }
 
-  // ---------- DERIVED DATA ----------
-
-  // Revenue per day
   const revenueByDay = (() => {
     const map = {};
     orders.forEach((o) => {
       const day = new Date(o.created_at).toISOString().slice(0, 10);
-      if (!map[day]) map[day] = { date: day, revenue: 0, orders: 0 };
+      if (!map[day]) map[day] = { date: day.slice(5), revenue: 0, orders: 0 };
       map[day].revenue += Number(o.total_amount);
       map[day].orders += 1;
     });
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
   })();
 
-  // Top selling products
   const topProducts = (() => {
     const map = {};
     items.forEach((it) => {
       if (!map[it.product_id]) {
         const prod = products.find((p) => p.id === it.product_id);
         map[it.product_id] = {
-          name: prod ? `${prod.name} · ${prod.weight}` : 'Unknown',
+          name: prod ? `${prod.name} (${prod.weight})` : 'Unknown',
+          shortName: prod ? prod.name.split(' ')[0] : 'Unknown',
           qty: 0,
           revenue: 0,
         };
@@ -92,12 +86,9 @@ export default function AdminAnalytics() {
       map[it.product_id].qty += it.quantity;
       map[it.product_id].revenue += it.quantity * Number(it.price_at_time);
     });
-    return Object.values(map)
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5);
+    return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
   })();
 
-  // Category revenue
   const categoryRevenue = (() => {
     const map = {};
     items.forEach((it) => {
@@ -109,7 +100,6 @@ export default function AdminAnalytics() {
     return Object.values(map);
   })();
 
-  // Customer metrics
   const customerMetrics = (() => {
     const customers = {};
     orders.forEach((o) => {
@@ -118,190 +108,143 @@ export default function AdminAnalytics() {
     });
     const total = Object.keys(customers).length;
     const repeat = Object.values(customers).filter((c) => c > 1).length;
-    return {
-      total,
-      repeat,
-      repeatRate: total ? ((repeat / total) * 100).toFixed(1) : '0.0',
-    };
+    return { total, repeat, repeatRate: total ? ((repeat / total) * 100).toFixed(0) : '0' };
   })();
 
-  // KPIs
   const totalRevenue = orders.reduce((s, o) => s + Number(o.total_amount), 0);
   const totalOrders = orders.length;
   const avgOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
-  const bestDay = revenueByDay.reduce(
-    (best, d) => (d.revenue > (best?.revenue || 0) ? d : best),
-    null
-  );
+  const bestDay = revenueByDay.reduce((best, d) => (d.revenue > (best?.revenue || 0) ? d : best), null);
 
   return (
-    <div className="admin-container">
-      <aside className="admin-sidebar">
-        <h2>🌿 Admin</h2>
-        <nav>
-          <Link to="/admin/dashboard">📊 Dashboard</Link>
-          <Link to="/admin/analytics">📈 Analytics</Link>
-          <Link to="/admin/analytics" className="active">📈 Analytics</Link>
-          <Link to="/admin/orders">📦 Orders</Link>
-          <Link to="/admin/products">🍌 Products</Link>
-          <Link to="/admin/team">Team</Link>
-          <Link to="/">🏠 View Site</Link>
-        </nav>
-        <button
-          className="logout-btn"
-          onClick={async () => {
-            await supabase.auth.signOut();
-            navigate('/admin');
-          }}
-        >
-          Logout
-        </button>
-      </aside>
+    <div className="prem-admin">
+      <AdminSidebar active="/admin/analytics" />
 
-      <main className="admin-main">
-        <div className="admin-top-bar">
-          <div className="admin-top-left">
-            <h1>Analytics</h1>
-            <p className="admin-welcome">
-              Business insights for the last <strong>{range} days</strong>
+      <main className="prem-admin-main">
+        <header className="prem-admin-topbar">
+          <div>
+            <span className="prem-kicker">INSIGHTS</span>
+            <h1 className="prem-admin-page-title">
+              Business <em>Analytics.</em>
+            </h1>
+            <p className="prem-admin-page-sub">
+              Performance for the last <strong>{range} days</strong>
             </p>
           </div>
 
-          <div className="range-picker">
+          <div className="prem-admin-range">
             {RANGE_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                className={`range-btn ${range === opt.value ? 'active' : ''}`}
+                className={`prem-admin-range-btn ${range === opt.value ? 'active' : ''}`}
                 onClick={() => setRange(opt.value)}
               >
                 {opt.label}
               </button>
             ))}
           </div>
-        </div>
+        </header>
 
         {loading ? (
-          <div className="analytics-loading">
-            <div className="track-spinner"></div>
+          <div className="prem-admin-loading">
             <p>Crunching the numbers...</p>
           </div>
         ) : (
           <>
-            {/* KPI Cards */}
-            <div className="analytics-kpi-grid">
-              <div className="kpi-card">
-                <div className="kpi-icon" style={{ background: 'linear-gradient(135deg, #2E7D32, #1B5E20)' }}>₹</div>
-                <p className="kpi-label">Total Revenue</p>
-                <h2 className="kpi-value">₹{totalRevenue.toFixed(0)}</h2>
-                <p className="kpi-sub">{totalOrders} orders</p>
+            {/* KPI CARDS */}
+            <div className="prem-admin-stats">
+              <div className="prem-admin-stat">
+                <span className="prem-admin-stat-label">Total Revenue</span>
+                <span className="prem-admin-stat-value">₹{totalRevenue.toFixed(0)}</span>
+                <span className="prem-admin-stat-sub">{totalOrders} orders</span>
               </div>
-
-              <div className="kpi-card">
-                <div className="kpi-icon" style={{ background: 'linear-gradient(135deg, #F9A825, #ef6c00)' }}>📊</div>
-                <p className="kpi-label">Avg Order Value</p>
-                <h2 className="kpi-value">₹{avgOrderValue.toFixed(0)}</h2>
-                <p className="kpi-sub">per order</p>
+              <div className="prem-admin-stat gold">
+                <span className="prem-admin-stat-label">Avg Order Value</span>
+                <span className="prem-admin-stat-value">₹{avgOrderValue.toFixed(0)}</span>
+                <span className="prem-admin-stat-sub">per order</span>
               </div>
-
-              <div className="kpi-card">
-                <div className="kpi-icon" style={{ background: 'linear-gradient(135deg, #C62828, #a02020)' }}>👥</div>
-                <p className="kpi-label">Total Customers</p>
-                <h2 className="kpi-value">{customerMetrics.total}</h2>
-                <p className="kpi-sub">{customerMetrics.repeat} repeat buyers</p>
+              <div className="prem-admin-stat">
+                <span className="prem-admin-stat-label">Total Customers</span>
+                <span className="prem-admin-stat-value">{customerMetrics.total}</span>
+                <span className="prem-admin-stat-sub">{customerMetrics.repeat} repeat buyers</span>
               </div>
-
-              <div className="kpi-card">
-                <div className="kpi-icon" style={{ background: 'linear-gradient(135deg, #1565C0, #0d47a1)' }}>🔁</div>
-                <p className="kpi-label">Repeat Rate</p>
-                <h2 className="kpi-value">{customerMetrics.repeatRate}%</h2>
-                <p className="kpi-sub">loyal customers</p>
+              <div className="prem-admin-stat warn">
+                <span className="prem-admin-stat-label">Repeat Rate</span>
+                <span className="prem-admin-stat-value">{customerMetrics.repeatRate}%</span>
+                <span className="prem-admin-stat-sub">loyal customers</span>
               </div>
             </div>
 
-            {/* Revenue Trend */}
-            <div className="analytics-card">
-              <div className="analytics-card-header">
-                <h3>📈 Revenue Trend</h3>
+            {/* REVENUE TREND */}
+            <section className="prem-admin-section">
+              <h2 className="prem-admin-section-title">
+                Revenue <em>Trend</em>
                 {bestDay && (
-                  <p className="analytics-sub">
-                    Best day: <strong>₹{bestDay.revenue.toFixed(0)}</strong> on {bestDay.date}
-                  </p>
+                  <span className="prem-admin-section-count">
+                    Best: ₹{bestDay.revenue.toFixed(0)} on {bestDay.date}
+                  </span>
                 )}
-              </div>
-              <div className="chart-wrapper">
+              </h2>
+              <div className="prem-admin-chart">
                 {revenueByDay.length === 0 ? (
-                  <p className="chart-empty">No orders in this period.</p>
+                  <p className="prem-admin-chart-empty">No orders in this period.</p>
                 ) : (
-                  <ResponsiveContainer width="100%" height={280}>
+                  <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={revenueByDay}>
-                      <defs>
-                        <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#2E7D32" stopOpacity={0.9} />
-                          <stop offset="100%" stopColor="#2E7D32" stopOpacity={0.15} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eee" vertical={false} />
-                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#888' }} />
-                      <YAxis tick={{ fontSize: 11, fill: '#888' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D5" vertical={false} />
+                      <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={{ stroke: '#EBE3D5' }} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={false} tickLine={false} />
                       <Tooltip
-                        contentStyle={{
-                          borderRadius: 10,
-                          border: '1px solid #e0e0e0',
-                          fontSize: '0.85rem',
-                        }}
-                        formatter={(v) => `₹${v}`}
+                        contentStyle={{ borderRadius: 0, border: '1px solid #0F0F0F', fontSize: '0.85rem', background: '#FEFDFB' }}
+                        formatter={(v) => [`₹${v}`, 'Revenue']}
                       />
                       <Line
                         type="monotone"
                         dataKey="revenue"
-                        stroke="#2E7D32"
-                        strokeWidth={3}
-                        dot={{ r: 4, fill: '#2E7D32' }}
-                        activeDot={{ r: 6 }}
-                        fill="url(#revGradient)"
+                        stroke="#14513E"
+                        strokeWidth={2}
+                        dot={{ r: 3, fill: '#14513E', strokeWidth: 0 }}
+                        activeDot={{ r: 5, fill: '#C9A227', stroke: '#14513E', strokeWidth: 2 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 )}
               </div>
-            </div>
+            </section>
 
-            {/* Best Sellers + Categories */}
-            <div className="analytics-row">
-              <div className="analytics-card">
-                <h3>🏆 Top Selling Products</h3>
-                <div className="chart-wrapper">
+            {/* TOP PRODUCTS + CATEGORY */}
+            <div className="prem-admin-chart-row">
+              <section className="prem-admin-section" style={{ marginBottom: 0 }}>
+                <h2 className="prem-admin-section-title">
+                  Top <em>Sellers</em>
+                </h2>
+                <div className="prem-admin-chart">
                   {topProducts.length === 0 ? (
-                    <p className="chart-empty">No sales yet.</p>
+                    <p className="prem-admin-chart-empty">No sales yet.</p>
                   ) : (
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={topProducts} layout="vertical" margin={{ left: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#eee" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 11, fill: '#888' }} />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          tick={{ fontSize: 11, fill: '#555' }}
-                          width={130}
-                        />
+                      <BarChart data={topProducts} layout="vertical" margin={{ left: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D5" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={{ stroke: '#EBE3D5' }} tickLine={false} />
+                        <YAxis type="category" dataKey="shortName" tick={{ fontSize: 11, fill: '#2A2A2A' }} width={80} axisLine={false} tickLine={false} />
                         <Tooltip
-                          contentStyle={{ borderRadius: 10, fontSize: '0.85rem' }}
-                          formatter={(v, k) =>
-                            k === 'revenue' ? `₹${v}` : `${v} units`
-                          }
+                          contentStyle={{ borderRadius: 0, border: '1px solid #0F0F0F', fontSize: '0.85rem', background: '#FEFDFB' }}
+                          formatter={(v, k) => (k === 'revenue' ? `₹${v}` : `${v} units`)}
                         />
-                        <Bar dataKey="revenue" fill="#F9A825" radius={[0, 8, 8, 0]} />
+                        <Bar dataKey="revenue" fill="#C9A227" radius={0} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
                 </div>
-              </div>
+              </section>
 
-              <div className="analytics-card">
-                <h3>🥧 Category Revenue</h3>
-                <div className="chart-wrapper">
+              <section className="prem-admin-section" style={{ marginBottom: 0 }}>
+                <h2 className="prem-admin-section-title">
+                  Revenue by <em>Category</em>
+                </h2>
+                <div className="prem-admin-chart">
                   {categoryRevenue.length === 0 ? (
-                    <p className="chart-empty">No data yet.</p>
+                    <p className="prem-admin-chart-empty">No data yet.</p>
                   ) : (
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
@@ -309,12 +252,10 @@ export default function AdminAnalytics() {
                           data={categoryRevenue}
                           dataKey="value"
                           nameKey="name"
-                          outerRadius={100}
+                          outerRadius={90}
                           innerRadius={50}
-                          paddingAngle={3}
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
+                          paddingAngle={2}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                           labelLine={false}
                         >
                           {categoryRevenue.map((entry, idx) => (
@@ -322,21 +263,24 @@ export default function AdminAnalytics() {
                           ))}
                         </Pie>
                         <Tooltip
-                          contentStyle={{ borderRadius: 10, fontSize: '0.85rem' }}
+                          contentStyle={{ borderRadius: 0, border: '1px solid #0F0F0F', fontSize: '0.85rem', background: '#FEFDFB' }}
                           formatter={(v) => `₹${v}`}
                         />
                       </PieChart>
                     </ResponsiveContainer>
                   )}
                 </div>
-              </div>
+              </section>
             </div>
 
-            {/* Top Products Table */}
-            <div className="analytics-card">
-              <h3>📋 Product Performance</h3>
-              <div className="orders-table-wrapper" style={{ marginTop: 16 }}>
-                <table className="admin-table">
+            {/* PRODUCT PERFORMANCE TABLE */}
+            <section className="prem-admin-section" style={{ marginTop: 'var(--s-5)' }}>
+              <h2 className="prem-admin-section-title">
+                Product <em>Performance</em>
+                <span className="prem-admin-section-count">{topProducts.length} products</span>
+              </h2>
+              <div className="prem-admin-table-wrap">
+                <table className="prem-admin-table">
                   <thead>
                     <tr>
                       <th>Rank</th>
@@ -348,25 +292,19 @@ export default function AdminAnalytics() {
                   <tbody>
                     {topProducts.map((p, idx) => (
                       <tr key={idx}>
-                        <td>
-                          <span className="rank-badge">
-                            {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
-                          </span>
-                        </td>
+                        <td><strong>{idx + 1}</strong></td>
                         <td>{p.name}</td>
                         <td>{p.qty}</td>
                         <td className="revenue-cell">₹{p.revenue.toFixed(0)}</td>
                       </tr>
                     ))}
                     {topProducts.length === 0 && (
-                      <tr>
-                        <td colSpan="4" className="empty-row">No sales in this period.</td>
-                      </tr>
+                      <tr><td colSpan="4" className="empty-row">No sales in this period</td></tr>
                     )}
                   </tbody>
                 </table>
               </div>
-            </div>
+            </section>
           </>
         )}
       </main>
