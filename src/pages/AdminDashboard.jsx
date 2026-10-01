@@ -62,6 +62,7 @@ export default function AdminDashboard() {
           <Link to="/admin/dashboard" className="active">📊 Dashboard</Link>
           <Link to="/admin/orders">📦 Orders</Link>
           <Link to="/admin/products">🍌 Products</Link>
+          <Link to="/admin/team">Team</Link>
           <Link to="/">🏠 View Site</Link>
         </nav>
         <button className="logout-btn" onClick={handleLogout}>
@@ -131,6 +132,7 @@ export default function AdminDashboard() {
             <Link to="/admin/products" className="alert-action">
               Manage Stock →
             </Link>
+          <Link to="/admin/team">Team</Link>
           </div>
         )}
 

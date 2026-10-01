@@ -109,6 +109,7 @@ export default function AdminOrders() {
           <Link to="/admin/analytics">📈 Analytics</Link>
           <Link to="/admin/orders" className="active">📦 Orders</Link>
           <Link to="/admin/products">🍌 Products</Link>
+          <Link to="/admin/team">Team</Link>
           <Link to="/">🏠 View Site</Link>
         </nav>
         <button

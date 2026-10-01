@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
@@ -14,13 +14,14 @@ import CustomerSignup from './pages/CustomerSignup';
 import MyOrders from './pages/MyOrders';
 import Wishlist from './pages/Wishlist';
 import BulkOrder from './pages/BulkOrder';
+import MyRewards from './pages/MyRewards';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
+import AdminTeam from './pages/AdminTeam';
 import './App.css';
-import MyRewards from './pages/MyRewards';
 
 function App() {
   return (
@@ -29,7 +30,6 @@ function App() {
       <BrowserRouter>
         <CartDrawer />
         <Routes>
-          {/* Customer routes */}
           <Route path="/" element={<><Navbar /><Home /></>} />
           <Route path="/products" element={<><Navbar /><Products /></>} />
           <Route path="/track" element={<><Navbar /><TrackOrder /></>} />
@@ -39,16 +39,16 @@ function App() {
           <Route path="/login" element={<><Navbar /><CustomerLogin /></>} />
           <Route path="/signup" element={<><Navbar /><CustomerSignup /></>} />
           <Route path="/my-orders" element={<><Navbar /><MyOrders /></>} />
-          <Route path="/rewards" element={<><Navbar /><MyRewards /></>} />
           <Route path="/wishlist" element={<><Navbar /><Wishlist /></>} />
           <Route path="/bulk-order" element={<><Navbar /><BulkOrder /></>} />
+          <Route path="/rewards" element={<><Navbar /><MyRewards /></>} />
 
-          {/* Admin routes */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/team" element={<AdminTeam />} />
         </Routes>
       </BrowserRouter>
     </CartProvider>

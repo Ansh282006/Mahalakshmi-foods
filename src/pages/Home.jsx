@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
 import useFlyToCart from '../hooks/useFlyToCart';
 import useSEO from '../hooks/useSEO';
+import useRecentlyViewed from '../hooks/useRecentlyViewed';
 import { organizationSchema } from '../utils/seo';
 import SkeletonCard from '../components/SkeletonCard';
 import RevealCard from '../components/RevealCard';
@@ -12,6 +13,8 @@ import StarRating from '../components/StarRating';
 import ReviewsModal from '../components/ReviewsModal';
 import PincodeChecker from '../components/PincodeChecker';
 import WishlistButton from '../components/WishlistButton';
+import ShareButton from '../components/ShareButton';
+import RecentlyViewed from '../components/RecentlyViewed';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -20,12 +23,12 @@ export default function Home() {
   const [reviewProduct, setReviewProduct] = useState(null);
   const { addToCart } = useCart();
   const flyToCart = useFlyToCart();
+  const { addRecentlyViewed } = useRecentlyViewed();
 
-  // SEO
   useSEO({
     title: 'Mahalaxmi Krushi Prakriya Udyog — Authentic Kolhapuri Chips',
     description:
-      'Buy freshly fried banana chips & jackfruit chips online. FSSAI certified, home delivered in Kolhapur. Cash on Delivery available.',
+      'Buy freshly fried banana chips and jackfruit chips online. FSSAI certified, home delivered in Kolhapur. Cash on Delivery available.',
     structuredData: organizationSchema(),
   });
 
@@ -52,10 +55,7 @@ export default function Home() {
           });
           const out = {};
           Object.keys(agg).forEach((id) => {
-            out[id] = {
-              avg: agg[id].sum / agg[id].count,
-              count: agg[id].count,
-            };
+            out[id] = { avg: agg[id].sum / agg[id].count, count: agg[id].count };
           });
           setRatings(out);
         }
@@ -69,16 +69,21 @@ export default function Home() {
     fetchData();
   }, []);
 
+  const handleViewProduct = (product) => {
+    addRecentlyViewed(product);
+    setReviewProduct(product);
+  };
+
   const handleAddToCart = (e, product) => {
     if (product.stock === 0) return;
     const card = e.currentTarget.closest('.product-card');
     flyToCart(card);
     addToCart(product);
+    addRecentlyViewed(product);
   };
 
   return (
     <>
-      {/* Hero */}
       <header className="hero-section">
         <div className="hero-content">
           <h1 className="hero-title">
@@ -103,12 +108,10 @@ export default function Home() {
 
       <BrandMarquee />
 
-      {/* Pincode Checker */}
       <div className="pincode-section">
         <PincodeChecker />
       </div>
 
-      {/* Product Grid */}
       <div className="app-container">
         <section className="products-section">
           <h2 className="section-title">Our Best Sellers</h2>
@@ -126,19 +129,27 @@ export default function Home() {
                             src={product.image_url}
                             alt={product.name}
                             className="product-image"
+                            onClick={() => handleViewProduct(product)}
+                            style={{ cursor: 'pointer' }}
                           />
                           {outOfStock && (
                             <div className="out-of-stock-badge">Out of Stock</div>
                           )}
                           <WishlistButton product={product} />
+                          <ShareButton product={product} />
                         </div>
                         <div className="product-info">
-                          <h3>{product.name}</h3>
+                          <h3
+                            onClick={() => handleViewProduct(product)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {product.name}
+                          </h3>
                           <p className="product-weight">{product.weight}</p>
 
                           <button
                             className="product-rating-btn"
-                            onClick={() => setReviewProduct(product)}
+                            onClick={() => handleViewProduct(product)}
                           >
                             <StarRating
                               value={rating?.avg || 0}
@@ -170,6 +181,9 @@ export default function Home() {
           </div>
         </section>
       </div>
+
+      {/* Recently Viewed Section */}
+      <RecentlyViewed />
 
       {reviewProduct && (
         <ReviewsModal

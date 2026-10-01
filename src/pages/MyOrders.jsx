@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { generateInvoice } from '../utils/invoice';
 
 export default function MyOrders() {
   const { user, loading: authLoading } = useAuth();
@@ -57,8 +58,21 @@ export default function MyOrders() {
     openDrawer();
   };
 
+  const handleDownloadInvoice = (order) => {
+    const items = (order.order_items || []).map((item) => ({
+      quantity: item.quantity,
+      price_at_time: item.price_at_time,
+      products: item.products,
+    }));
+    generateInvoice(order, items);
+  };
+
   if (authLoading || loading) {
-    return <div className="app-container"><div className="loader">Loading your orders...</div></div>;
+    return (
+      <div className="app-container">
+        <div className="loader">Loading your orders...</div>
+      </div>
+    );
   }
 
   return (
@@ -70,7 +84,7 @@ export default function MyOrders() {
           <div className="empty-icon">📦</div>
           <h3>No orders yet</h3>
           <p>Your past orders will appear here once you place one.</p>
-          <Link to="/products" className="track-shop-link">Browse Products →</Link>
+          <Link to="/products" className="track-shop-link">Browse Products</Link>
         </div>
       )}
 
@@ -82,7 +96,9 @@ export default function MyOrders() {
                 <span className="track-code">{order.order_code}</span>
                 <span className="my-order-date">
                   {new Date(order.created_at).toLocaleDateString('en-IN', {
-                    day: 'numeric', month: 'short', year: 'numeric'
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
                   })}
                 </span>
               </div>
@@ -109,9 +125,17 @@ export default function MyOrders() {
             <div className="my-order-footer">
               <span className="my-order-total">Total: <strong>₹{order.total_amount}</strong></span>
               <div className="my-order-actions">
-                <button className="my-order-track" onClick={() => navigate(`/track`)}>Track</button>
+                <button className="my-order-track" onClick={() => navigate('/track')}>
+                  Track
+                </button>
+                <button
+                  className="my-order-invoice"
+                  onClick={() => handleDownloadInvoice(order)}
+                >
+                  Invoice
+                </button>
                 <button className="my-order-reorder" onClick={() => handleReorder(order)}>
-                  🔁 Reorder
+                  Reorder
                 </button>
               </div>
             </div>

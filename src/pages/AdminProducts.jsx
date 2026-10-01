@@ -223,6 +223,7 @@ export default function AdminProducts() {
           <Link to="/admin/dashboard">📊 Dashboard</Link>
           <Link to="/admin/orders">📦 Orders</Link>
           <Link to="/admin/products" className="active">🍌 Products</Link>
+          <Link to="/admin/team">Team</Link>
           <Link to="/">🏠 View Site</Link>
         </nav>
         <button

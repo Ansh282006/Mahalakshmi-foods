@@ -1,25 +1,26 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import useWishlist from '../hooks/useWishlist';
+import usePendingOrders from '../hooks/usePendingOrders';
 import LanguageSwitcher from './LanguageSwitcher';
+import DarkModeToggle from './DarkModeToggle';
 
 export default function Sidebar({ isOpen, onClose }) {
   const { getItemCount } = useCart();
   const { user, signOut, isAdmin } = useAuth();
   const { count: wishlistCount } = useWishlist();
+  const { pending, unseen, markAsSeen } = usePendingOrders();
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Close sidebar on route change
   useEffect(() => {
     onClose();
   }, [location.pathname]);
 
-  // Lock body scroll when open
   useEffect(() => {
     if (isOpen) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
@@ -28,7 +29,6 @@ export default function Sidebar({ isOpen, onClose }) {
     };
   }, [isOpen]);
 
-  // Close on Escape key
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape' && isOpen) onClose();
@@ -43,19 +43,22 @@ export default function Sidebar({ isOpen, onClose }) {
     navigate('/');
   };
 
+  const handleAdminClick = () => {
+    markAsSeen();
+    onClose();
+    navigate('/admin/dashboard');
+  };
+
   const isActive = (path) => location.pathname === path;
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`sidebar-backdrop ${isOpen ? 'open' : ''}`}
         onClick={onClose}
       />
 
-      {/* Sidebar Panel */}
       <aside className={`sidebar-panel ${isOpen ? 'open' : ''}`}>
-        {/* Header */}
         <div className="sidebar-header">
           <Link to="/" className="sidebar-brand" onClick={onClose}>
             <span className="sidebar-brand-name">MAHALAXMI</span>
@@ -71,47 +74,29 @@ export default function Sidebar({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Menu */}
         <nav className="sidebar-nav">
-          {/* SHOP */}
           <div className="sidebar-section">
             <span className="sidebar-section-label">{t('nav.shop')}</span>
-            <Link
-              to="/"
-              className={`sidebar-link ${isActive('/') ? 'active' : ''}`}
-            >
+            <Link to="/" className={`sidebar-link ${isActive('/') ? 'active' : ''}`} onClick={onClose}>
               {t('nav.home')}
             </Link>
-            <Link
-              to="/products"
-              className={`sidebar-link ${isActive('/products') ? 'active' : ''}`}
-            >
+            <Link to="/products" className={`sidebar-link ${isActive('/products') ? 'active' : ''}`} onClick={onClose}>
               {t('nav.products')}
             </Link>
-            <Link
-              to="/bulk-order"
-              className={`sidebar-link ${isActive('/bulk-order') ? 'active' : ''}`}
-            >
+            <Link to="/bulk-order" className={`sidebar-link ${isActive('/bulk-order') ? 'active' : ''}`} onClick={onClose}>
               {t('nav.bulkOrder')}
             </Link>
           </div>
 
-          {/* ACCOUNT */}
           <div className="sidebar-section">
             <span className="sidebar-section-label">{t('nav.account')}</span>
 
             {!user && (
               <>
-                <Link
-                  to="/login"
-                  className={`sidebar-link ${isActive('/login') ? 'active' : ''}`}
-                >
+                <Link to="/login" className={`sidebar-link ${isActive('/login') ? 'active' : ''}`} onClick={onClose}>
                   {t('nav.login')}
                 </Link>
-                <Link
-                  to="/signup"
-                  className={`sidebar-link ${isActive('/signup') ? 'active' : ''}`}
-                >
+                <Link to="/signup" className={`sidebar-link ${isActive('/signup') ? 'active' : ''}`} onClick={onClose}>
                   {t('nav.signup')}
                 </Link>
               </>
@@ -119,28 +104,28 @@ export default function Sidebar({ isOpen, onClose }) {
 
             {user && !isAdmin && (
               <>
-                <Link
-                  to="/my-orders"
-                  className={`sidebar-link ${isActive('/my-orders') ? 'active' : ''}`}
-                >
+                <Link to="/my-orders" className={`sidebar-link ${isActive('/my-orders') ? 'active' : ''}`} onClick={onClose}>
                   {t('nav.myOrders')}
                 </Link>
-                <Link
-                  to="/rewards"
-                  className={`sidebar-link ${isActive('/rewards') ? 'active' : ''}`}
-                >
+                <Link to="/rewards" className={`sidebar-link ${isActive('/rewards') ? 'active' : ''}`} onClick={onClose}>
                   My Rewards
                 </Link>
               </>
             )}
 
             {user && isAdmin && (
-              <Link
-                to="/admin/dashboard"
+              <button
                 className={`sidebar-link admin-link ${isActive('/admin/dashboard') ? 'active' : ''}`}
+                onClick={handleAdminClick}
               >
                 {t('nav.adminPanel')}
-              </Link>
+                {unseen > 0 && (
+                  <span className="sidebar-notification-badge">{unseen}</span>
+                )}
+                {unseen === 0 && pending > 0 && (
+                  <span className="sidebar-pending-badge">{pending}</span>
+                )}
+              </button>
             )}
 
             {user && (
@@ -156,37 +141,27 @@ export default function Sidebar({ isOpen, onClose }) {
             )}
           </div>
 
-          {/* SUPPORT */}
           <div className="sidebar-section">
             <span className="sidebar-section-label">{t('nav.support')}</span>
-            <Link
-              to="/track"
-              className={`sidebar-link ${isActive('/track') ? 'active' : ''}`}
-            >
+            <Link to="/track" className={`sidebar-link ${isActive('/track') ? 'active' : ''}`} onClick={onClose}>
               {t('nav.track')}
             </Link>
-            <a
-              href="tel:+917774982725"
-              className="sidebar-link"
-              onClick={onClose}
-            >
+            <a href="tel:+917774982725" className="sidebar-link" onClick={onClose}>
               {t('nav.callUs')}
             </a>
-            <a
-              href="https://wa.me/917774982725"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sidebar-link"
-            >
+            <a href="https://wa.me/917774982725" target="_blank" rel="noopener noreferrer" className="sidebar-link">
               {t('nav.whatsapp')}
             </a>
           </div>
         </nav>
 
-        {/* Footer */}
         <div className="sidebar-footer">
           <div className="sidebar-footer-lang">
             <LanguageSwitcher />
+          </div>
+
+          <div className="sidebar-footer-dark">
+            <DarkModeToggle />
           </div>
 
           <div className="sidebar-footer-stats">

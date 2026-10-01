@@ -1,7 +1,8 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
+import TrackOrderSkeleton from '../components/TrackOrderSkeleton';
 
 const STATUS_STEPS = ['Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered'];
 
@@ -52,7 +53,7 @@ export default function TrackOrder() {
   }
 
   function shareOnWhatsApp(order) {
-    const message = `🌿 *Mahalaxmi Krushi Prakriya Udyog*\n\n📋 Order: *${order.order_code}*\n📦 Status: ${order.status}\n💰 Total: ₹${order.total_amount}\n\nTrack anytime at our website. 🙏`;
+    const message = `Mahalaxmi Chips\n\nOrder: ${order.order_code}\nStatus: ${order.status}\nTotal: Rs. ${order.total_amount}\n\nTrack anytime at our website.`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   }
 
@@ -89,23 +90,18 @@ export default function TrackOrder() {
             className="track-input"
           />
           <button type="submit" className="track-btn" disabled={loading}>
-            {loading ? 'Searching...' : '🔍 Track'}
+            {loading ? 'Searching...' : 'Track'}
           </button>
         </form>
 
-        {loading && (
-          <div className="track-loading">
-            <div className="track-spinner"></div>
-            <p>Looking for your order...</p>
-          </div>
-        )}
+        {loading && <TrackOrderSkeleton />}
 
         {!loading && searched && orders.length === 0 && (
           <div className="track-empty">
             <div className="empty-icon">📦</div>
             <h3>No orders found</h3>
             <p>Double-check your order code or phone number.</p>
-            <Link to="/products" className="track-shop-link">Browse Products →</Link>
+            <Link to="/products" className="track-shop-link">Browse Products</Link>
           </div>
         )}
 
@@ -128,7 +124,7 @@ export default function TrackOrder() {
                           onClick={() => copyCode(order.order_code)}
                           title="Copy order code"
                         >
-                          📋
+                          Copy
                         </button>
                       </div>
                       <span className="track-date">
@@ -146,11 +142,10 @@ export default function TrackOrder() {
 
                   {cancelled && (
                     <div className="cancelled-notice">
-                      ⚠️ This order was cancelled. If unexpected, please contact us.
+                      This order was cancelled. If unexpected, please contact us.
                     </div>
                   )}
 
-                  {/* Estimated Delivery Banner */}
                   {!cancelled && order.estimated_delivery && order.status !== 'Delivered' && (
                     <div className="eta-banner">
                       <span className="eta-icon">📅</span>
@@ -161,10 +156,9 @@ export default function TrackOrder() {
                     </div>
                   )}
 
-                  {/* Delivered Banner */}
                   {order.status === 'Delivered' && (
                     <div className="delivered-banner">
-                      <span className="eta-icon">🎉</span>
+                      <span className="eta-icon">✓</span>
                       <div>
                         <strong>Delivered</strong>
                         <span>
@@ -176,7 +170,6 @@ export default function TrackOrder() {
                     </div>
                   )}
 
-                  {/* Progress timeline */}
                   {!cancelled && (
                     <div className="track-timeline">
                       <div className="timeline-track">
@@ -204,7 +197,6 @@ export default function TrackOrder() {
                     </div>
                   )}
 
-                  {/* Delivery Partner Card */}
                   {hasDeliveryPartner && !cancelled && (
                     <div className={`delivery-partner-card ${isOutForDelivery ? 'active' : ''}`}>
                       <div className="dp-avatar">
@@ -222,13 +214,12 @@ export default function TrackOrder() {
                           className="dp-call-btn"
                           onClick={() => callPartner(order.delivery_partner_phone)}
                         >
-                          📞 Call
+                          Call
                         </button>
                       )}
                     </div>
                   )}
 
-                  {/* Details */}
                   <div className="track-details">
                     <div className="track-detail-item">
                       <span className="detail-label">Customer</span>
@@ -248,7 +239,6 @@ export default function TrackOrder() {
                     </div>
                   </div>
 
-                  {/* Status History */}
                   {order.status_history && order.status_history.length > 0 && (
                     <div className="track-history">
                       <h4>Status Updates</h4>
@@ -273,10 +263,10 @@ export default function TrackOrder() {
 
                   <div className="track-card-actions">
                     <button className="track-wa-btn" onClick={() => shareOnWhatsApp(order)}>
-                      📱 Share on WhatsApp
+                      Share on WhatsApp
                     </button>
                     <Link to="/products" className="track-continue-btn">
-                      🛒 Continue Shopping
+                      Continue Shopping
                     </Link>
                   </div>
                 </div>

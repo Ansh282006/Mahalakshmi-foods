@@ -144,6 +144,7 @@ export default function AdminAnalytics() {
           <Link to="/admin/analytics" className="active">📈 Analytics</Link>
           <Link to="/admin/orders">📦 Orders</Link>
           <Link to="/admin/products">🍌 Products</Link>
+          <Link to="/admin/team">Team</Link>
           <Link to="/">🏠 View Site</Link>
         </nav>
         <button
