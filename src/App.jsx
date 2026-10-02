@@ -16,20 +16,23 @@ import MyOrders from './pages/MyOrders';
 import Wishlist from './pages/Wishlist';
 import BulkOrder from './pages/BulkOrder';
 import MyRewards from './pages/MyRewards';
+import VideoCall from './pages/VideoCall';
+import RetailerSetup from './pages/RetailerSetup';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import AdminTeam from './pages/AdminTeam';
+import AdminVideoCalls from './pages/AdminVideoCalls';
+import AdminRetailers from './pages/AdminRetailers';
 
-/* CSS imports — order matters */
-import './App.css';           /* base / legacy styles   */
-import './landing.css';       /* landing page            */
-import './landing-footer.css';/* full footer             */
-import './premium.css';       /* shared premium system   */
+import './App.css';
+import './landing.css';
+import './landing-footer.css';
+import './premium.css';
 import './premium-pages.css';
-import './premium-admin.css'; /* page-specific premium   */
+import './premium-admin.css';
 
 function App() {
   return (
@@ -52,6 +55,8 @@ function App() {
           <Route path="/wishlist" element={<><Navbar /><Wishlist /></>} />
           <Route path="/bulk-order" element={<><Navbar /><BulkOrder /></>} />
           <Route path="/rewards" element={<><Navbar /><MyRewards /></>} />
+          <Route path="/video-call" element={<><Navbar /><VideoCall /></>} />
+          <Route path="/retailer-setup" element={<><Navbar /><RetailerSetup /></>} />
 
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -59,6 +64,8 @@ function App() {
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/team" element={<AdminTeam />} />
+          <Route path="/admin/video-calls" element={<AdminVideoCalls />} />
+          <Route path="/admin/retailers" element={<AdminRetailers />} />
         </Routes>
       </BrowserRouter>
     </CartProvider>

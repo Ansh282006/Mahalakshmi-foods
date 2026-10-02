@@ -8,6 +8,8 @@ const NAV_GROUPS = [
       { to: '/admin/dashboard', label: 'Dashboard', icon: 'M3 12l9-9 9 9M5 10v10h14V10' },
       { to: '/admin/orders', label: 'Orders', icon: 'M3 9l9-6 9 6-9 6-9-6zM3 9v6l9 6 9-6V9', badge: 'orders' },
       { to: '/admin/products', label: 'Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', badge: 'lowstock' },
+      { to: '/admin/retailers', label: 'Retailers', icon: 'M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87', badge: 'retailers' },
+      { to: '/admin/video-calls', label: 'Video Calls', icon: 'M23 7l-7 5 7 5V7zM1 5h15a2 2 0 012 2v10a2 2 0 01-2 2H1V5z', badge: 'videocalls' },
     ],
   },
   {

@@ -2014,3 +2014,32 @@ body.dark-mode .prem-admin-team-avatar {
 body.dark-mode .prem-admin-team-email { color: var(--cream-50); }
 body.dark-mode .prem-admin-team-role { color: var(--gold-400); }
 body.dark-mode .prem-admin-team-date { color: rgba(254, 253, 251, 0.5); }
+
+/* ============================================
+   RETAILER STATUS BADGES
+   ============================================ */
+.prem-admin-badge.pending { color: #F9A825; }
+.prem-admin-badge.approved { color: #4CAF50; }
+.prem-admin-badge.rejected { color: #f87171; }
+.prem-admin-badge.suspended { color: #9ca3af; }
+
+/* Retailer form: styled select */
+.prem-admin-dp-field select {
+  padding: 10px 12px;
+  border: 1px solid var(--charcoal-900);
+  background: var(--cream-50);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--charcoal-900);
+}
+
+.prem-admin-dp-field select:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--forest-700);
+}
+
+body.dark-mode .prem-admin-dp-field select {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.2);
+  color: var(--cream-100);
+}

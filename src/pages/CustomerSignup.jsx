@@ -37,6 +37,7 @@ export default function CustomerSignup() {
       return;
     }
 
+    // Generate referral code
     if (data?.user?.id) {
       const myCode = generateCode(form.name);
       await supabase.from('referral_codes').insert({
@@ -45,10 +46,10 @@ export default function CustomerSignup() {
       });
     }
 
+    // Process incoming referral
     if (referralCode && data?.user?.id) {
       try {
         await processReferral(referralCode, data.user.id, form.email);
-        toast.success('Referral bonus applied');
       } catch (err) {
         console.error('Referral processing error:', err);
       }
@@ -56,7 +57,8 @@ export default function CustomerSignup() {
 
     setLoading(false);
     toast.success('Account created');
-    navigate('/my-orders');
+    // CHANGED: redirect to retailer setup instead of my-orders
+    navigate('/retailer-setup');
   };
 
   return (
@@ -71,42 +73,44 @@ export default function CustomerSignup() {
           </Link>
 
           <div className="prem-auth-brand-copy">
-            <span className="prem-kicker" style={{ color: 'var(--gold-500)', borderBottomColor: 'var(--gold-500)' }}>CREATE ACCOUNT</span>
+            <span className="prem-kicker" style={{ color: 'var(--gold-500)', borderBottomColor: 'var(--gold-500)' }}>
+              RETAILER REGISTRATION
+            </span>
             <h2 className="prem-auth-brand-title">
-              Join the <em>Mahalaxmi</em> family.
+              Join our <em>retailer</em> network.
             </h2>
             <p>
-              Create your account in 30 seconds. Get 100% faster checkout,
-              track orders live, and earn loyalty points on every purchase.
+              Apply for wholesale access to Mahalaxmi Chips. Get access to bulk
+              pricing, dedicated support, and dispatch to your district.
             </p>
           </div>
 
           <ul className="prem-auth-brand-list">
             <li>
               <span className="prem-auth-check">✓</span>
-              <span>Personal order history</span>
+              <span>Wholesale prices on 1kg & 5kg packs</span>
             </li>
             <li>
               <span className="prem-auth-check">✓</span>
-              <span>Loyalty points on every order</span>
+              <span>GST invoices for every order</span>
             </li>
             <li>
               <span className="prem-auth-check">✓</span>
-              <span>Referral rewards (₹50 per friend)</span>
+              <span>Dispatch via transport to your district</span>
             </li>
             <li>
               <span className="prem-auth-check">✓</span>
-              <span>Early access to new flavours</span>
+              <span>Dedicated account manager</span>
             </li>
           </ul>
         </aside>
 
         <main className="prem-auth-form-side">
           <div className="prem-auth-form-inner">
-            <span className="prem-kicker">NEW ACCOUNT</span>
+            <span className="prem-kicker">STEP 1 OF 2</span>
             <h1 className="prem-auth-title">Create your account.</h1>
             <p className="prem-auth-sub">
-              Fill in your details to get started.
+              First, create your login. Next, you will fill in your shop details for approval.
             </p>
 
             {referralCode && (
@@ -123,7 +127,7 @@ export default function CustomerSignup() {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Ansh Patil"
+                  placeholder="Your name"
                   required
                 />
               </div>
@@ -172,8 +176,13 @@ export default function CustomerSignup() {
                 </div>
               </div>
 
-              <button type="submit" className="prem-btn-primary" disabled={loading} style={{ width: '100%', padding: '18px' }}>
-                {loading ? 'Creating account...' : 'Create Account'}
+              <button
+                type="submit"
+                className="prem-btn-primary"
+                disabled={loading}
+                style={{ width: '100%', padding: '18px' }}
+              >
+                {loading ? 'Creating account...' : 'Continue to Shop Details →'}
               </button>
             </form>
 
