@@ -13,10 +13,8 @@ import TrackOrder from './pages/TrackOrder';
 import CustomerLogin from './pages/CustomerLogin';
 import CustomerSignup from './pages/CustomerSignup';
 import MyOrders from './pages/MyOrders';
-import Wishlist from './pages/Wishlist';
 import BulkOrder from './pages/BulkOrder';
 import MyRewards from './pages/MyRewards';
-import VideoCall from './pages/VideoCall';
 import RetailerSetup from './pages/RetailerSetup';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
@@ -24,7 +22,6 @@ import AdminAnalytics from './pages/AdminAnalytics';
 import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import AdminTeam from './pages/AdminTeam';
-import AdminVideoCalls from './pages/AdminVideoCalls';
 import AdminRetailers from './pages/AdminRetailers';
 
 import './App.css';
@@ -43,6 +40,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
 
+          {/* Retailer & catalog routes */}
           <Route path="/shop" element={<><Navbar /><Home /></>} />
           <Route path="/products" element={<><Navbar /><Products /></>} />
           <Route path="/track" element={<><Navbar /><TrackOrder /></>} />
@@ -52,19 +50,17 @@ function App() {
           <Route path="/login" element={<><Navbar /><CustomerLogin /></>} />
           <Route path="/signup" element={<><Navbar /><CustomerSignup /></>} />
           <Route path="/my-orders" element={<><Navbar /><MyOrders /></>} />
-          <Route path="/wishlist" element={<><Navbar /><Wishlist /></>} />
           <Route path="/bulk-order" element={<><Navbar /><BulkOrder /></>} />
           <Route path="/rewards" element={<><Navbar /><MyRewards /></>} />
-          <Route path="/video-call" element={<><Navbar /><VideoCall /></>} />
           <Route path="/retailer-setup" element={<><Navbar /><RetailerSetup /></>} />
 
+          {/* Admin routes */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/team" element={<AdminTeam />} />
-          <Route path="/admin/video-calls" element={<AdminVideoCalls />} />
           <Route path="/admin/retailers" element={<AdminRetailers />} />
         </Routes>
       </BrowserRouter>
