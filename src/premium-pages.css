@@ -2823,3 +2823,254 @@ body.dark-mode .prem-pincode-result.fail { background: rgba(184, 52, 31, 0.15); 
 body.dark-mode .prem-pincode-result.fail strong { color: #f87171; }
 body.dark-mode .prem-pincode-result.warn { background: rgba(201, 162, 39, 0.15); }
 body.dark-mode .prem-pincode-result.warn strong { color: #ffd54f; }
+
+/* ============================================
+   B2B WHOLESALE STYLES
+   ============================================ */
+
+/* Status banners */
+.prem-b2b-banner {
+  max-width: 1200px;
+  margin: var(--s-4) auto 0;
+  padding: var(--s-3) var(--s-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  border-left: 4px solid;
+}
+
+.prem-b2b-banner > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.prem-b2b-banner strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.prem-b2b-banner span {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.prem-b2b-banner.info {
+  background: #E3F2FD;
+  border-left-color: #1565C0;
+}
+.prem-b2b-banner.info strong { color: #0D47A1; }
+.prem-b2b-banner.info span { color: #1565C0; }
+
+.prem-b2b-banner.warn {
+  background: #FFF8E1;
+  border-left-color: var(--gold-600);
+}
+.prem-b2b-banner.warn strong { color: #665500; }
+.prem-b2b-banner.warn span { color: #8B6F00; }
+
+.prem-b2b-banner.danger {
+  background: #FEF2F2;
+  border-left-color: var(--signal-red);
+}
+.prem-b2b-banner.danger strong { color: #7F1D1D; }
+.prem-b2b-banner.danger span { color: var(--signal-red); }
+
+/* B2B meta rows in product cards */
+.prem-b2b-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--s-2) 0;
+  margin: var(--s-2) 0;
+  border-top: 1px solid var(--cream-300);
+  border-bottom: 1px solid var(--cream-300);
+}
+
+.prem-b2b-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-2);
+  font-size: 0.82rem;
+}
+
+.prem-b2b-meta-row span {
+  color: var(--charcoal-500);
+  letter-spacing: 0.3px;
+}
+
+.prem-b2b-meta-row strong {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--forest-800);
+  letter-spacing: -0.01em;
+}
+
+/* B2B quantity stepper in product card */
+.prem-b2b-qty {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--charcoal-900);
+  height: 44px;
+  width: 100%;
+}
+
+.prem-b2b-qty .prem-qty-btn {
+  width: 44px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--charcoal-900);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.prem-b2b-qty .prem-qty-btn:hover { background: var(--charcoal-900); color: var(--cream-100); }
+
+.prem-b2b-qty .prem-qty-num {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--charcoal-900);
+}
+
+/* Sticky order bar */
+.prem-b2b-sticky {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--forest-950);
+  color: var(--cream-100);
+  border-top: 1px solid var(--gold-500);
+  z-index: 900;
+  animation: premStickyIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes premStickyIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.prem-b2b-sticky-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px var(--s-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.prem-b2b-sticky-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.prem-b2b-sticky-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-500);
+}
+
+.prem-b2b-sticky-value {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--cream-50);
+  letter-spacing: -0.01em;
+}
+
+.prem-b2b-sticky-right {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.prem-b2b-moq-warn {
+  font-size: 0.82rem;
+  color: var(--gold-400);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.prem-btn-primary.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Cart item kg display */
+.prem-cart-item-kg {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--forest-700);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* Add bottom padding to page so sticky bar doesn't overlap */
+.prem-page:has(.prem-b2b-sticky) {
+  padding-bottom: 120px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .prem-b2b-sticky-inner {
+    padding: 14px var(--s-2);
+  }
+  .prem-b2b-sticky-value { font-size: 1rem; }
+  .prem-b2b-sticky-right { width: 100%; justify-content: space-between; }
+  .prem-b2b-sticky-right .prem-btn-primary {
+    flex: 1;
+    padding: 14px;
+    font-size: 0.72rem;
+  }
+}
+
+/* Dark mode */
+body.dark-mode .prem-b2b-banner.info {
+  background: rgba(21, 101, 192, 0.15);
+}
+body.dark-mode .prem-b2b-banner.info strong { color: #90CAF9; }
+body.dark-mode .prem-b2b-banner.info span { color: #64B5F6; }
+
+body.dark-mode .prem-b2b-banner.warn {
+  background: rgba(201, 162, 39, 0.15);
+}
+body.dark-mode .prem-b2b-banner.warn strong { color: var(--gold-400); }
+body.dark-mode .prem-b2b-banner.warn span { color: rgba(201, 162, 39, 0.9); }
+
+body.dark-mode .prem-b2b-banner.danger {
+  background: rgba(184, 52, 31, 0.15);
+}
+
+body.dark-mode .prem-b2b-meta {
+  border-top-color: rgba(254, 253, 251, 0.08);
+  border-bottom-color: rgba(254, 253, 251, 0.08);
+}
+
+body.dark-mode .prem-b2b-meta-row span { color: rgba(254, 253, 251, 0.5); }
+body.dark-mode .prem-b2b-meta-row strong { color: var(--gold-400); }
+
+body.dark-mode .prem-b2b-qty { border-color: rgba(254, 253, 251, 0.25); }
+body.dark-mode .prem-b2b-qty .prem-qty-btn { color: var(--cream-100); }
+body.dark-mode .prem-b2b-qty .prem-qty-btn:hover { background: var(--gold-500); color: var(--forest-950); }
+body.dark-mode .prem-b2b-qty .prem-qty-num { color: var(--cream-100); }
+
+body.dark-mode .prem-cart-item-kg { color: var(--gold-400); }

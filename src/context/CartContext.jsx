@@ -23,21 +23,18 @@ export function CartProvider({ children }) {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
-        toast.success(`Added another ${product.weight} ${product.name} 🛒`);
         return prev.map((item) =>
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      toast.success(`${product.name} added to cart! 🎉`, {
-        style: { background: '#2E7D32', color: '#fff' },
-      });
       return [...prev, { ...product, quantity: 1 }];
     });
+    toast.success(`${product.name} added to order sheet`);
   };
 
   const removeFromCart = (id) => {
-    toast.error('Item removed from cart');
     setCart((prev) => prev.filter((item) => item.id !== id));
+    toast.success('Item removed');
   };
 
   const updateQuantity = (id, quantity) => {
@@ -53,6 +50,18 @@ export function CartProvider({ children }) {
   const getTotal = () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const getItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // NEW: total weight in kg
+  const getTotalKg = () =>
+    cart.reduce((sum, item) => sum + (item.pack_size_kg || 1) * item.quantity, 0);
+
+  // NEW: GST total
+  const getGstTotal = () =>
+    cart.reduce((sum, item) => {
+      const lineTotal = item.price * item.quantity;
+      const gstRate = item.gst_percent || 5;
+      return sum + (lineTotal * gstRate) / (100 + gstRate); // inclusive
+    }, 0);
+
   return (
     <CartContext.Provider
       value={{
@@ -63,6 +72,8 @@ export function CartProvider({ children }) {
         clearCart,
         getTotal,
         getItemCount,
+        getTotalKg,
+        getGstTotal,
         isDrawerOpen,
         openDrawer,
         closeDrawer,

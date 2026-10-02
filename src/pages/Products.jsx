@@ -1,119 +1,154 @@
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
-import useFlyToCart from '../hooks/useFlyToCart';
 import useSEO from '../hooks/useSEO';
-import useRecentlyViewed from '../hooks/useRecentlyViewed';
-import { productSchema } from '../utils/seo';
-import SkeletonCard from '../components/SkeletonCard';
-import StarRating from '../components/StarRating';
-import ReviewsModal from '../components/ReviewsModal';
-import WishlistButton from '../components/WishlistButton';
-import ShareButton from '../components/ShareButton';
+import { useAuth } from '../context/AuthContext';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
-  const [ratings, setRatings] = useState({});
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [reviewProduct, setReviewProduct] = useState(null);
-  const { addToCart } = useCart();
-  const flyToCart = useFlyToCart();
-  const { addRecentlyViewed } = useRecentlyViewed();
+  const [retailer, setRetailer] = useState(null);
+  const { cart, addToCart, updateQuantity, removeFromCart, getTotalKg } = useCart();
+  const { user } = useAuth();
 
   useSEO({
-    title: 'All Products — Mahalaxmi Chips',
-    description:
-      'Browse our authentic banana chips and jackfruit chips. Multiple sizes available. Free delivery in Kolhapur.',
+    title: 'Wholesale Catalog — Mahalaxmi Chips',
+    description: 'Wholesale banana and jackfruit chips for retailers and distributors. 1kg and 5kg packs. MOQ 10kg.',
   });
 
   useEffect(() => {
     fetchAll();
-  }, []);
-
-  useEffect(() => {
-    if (products.length > 0) {
-      let script = document.getElementById('structured-data');
-      if (!script) {
-        script = document.createElement('script');
-        script.id = 'structured-data';
-        script.type = 'application/ld+json';
-        document.head.appendChild(script);
-      }
-      script.textContent = JSON.stringify(productSchema(products));
-    }
-  }, [products]);
+  }, [user]);
 
   async function fetchAll() {
     const { data: prods } = await supabase
       .from('products')
       .select('*')
-      .eq('is_available', true);
+      .eq('is_available', true)
+      .order('category');
     setProducts(prods || []);
 
-    const { data: revs } = await supabase
-      .from('reviews')
-      .select('product_id, rating');
-    if (revs) {
-      const agg = {};
-      revs.forEach((r) => {
-        if (!agg[r.product_id]) agg[r.product_id] = { sum: 0, count: 0 };
-        agg[r.product_id].sum += r.rating;
-        agg[r.product_id].count += 1;
-      });
-      const out = {};
-      Object.keys(agg).forEach((id) => {
-        out[id] = { avg: agg[id].sum / agg[id].count, count: agg[id].count };
-      });
-      setRatings(out);
+    if (user) {
+      const { data: ret } = await supabase
+        .from('retailers')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setRetailer(ret);
     }
-    setTimeout(() => setLoading(false), 700);
+
+    setTimeout(() => setLoading(false), 600);
   }
 
   const filtered = useMemo(() => {
-    let result =
-      filter === 'All' ? products : products.filter((p) => p.category === filter);
+    let result = filter === 'All' ? products : products.filter((p) => p.category === filter);
+    // Hide seasonal products that are off-season
+    result = result.filter((p) => !p.is_seasonal || p.is_active_this_season !== false);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter((p) => {
-        const text = `${p.name} ${p.category} ${p.weight} ${p.description || ''}`.toLowerCase();
+        const text = `${p.name} ${p.category} ${p.pack_size_kg}kg ${p.description || ''}`.toLowerCase();
         return text.includes(q);
       });
     }
     return result;
   }, [products, filter, search]);
 
-  const handleAddToCart = (e, product) => {
-    if (product.stock === 0) return;
-    const card = e.currentTarget.closest('.prem-card');
-    flyToCart(card);
-    addToCart(product);
-    addRecentlyViewed(product);
+  const getCartQty = (productId) => {
+    const item = cart.find((c) => c.id === productId);
+    return item ? item.quantity : 0;
   };
 
-  const handleViewProduct = (product) => {
-    addRecentlyViewed(product);
-    setReviewProduct(product);
+  const handleAdd = (product) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      weight: `${product.pack_size_kg || 1}kg`,
+      pack_size_kg: product.pack_size_kg || 1,
+      image_url: product.image_url,
+      category: product.category,
+      gst_percent: product.gst_percent || 5,
+      hsn_code: product.hsn_code || '2005',
+    });
   };
+
+  const isApprovedRetailer = retailer?.status === 'Approved';
+  const totalKg = cart.reduce((sum, item) => sum + (item.pack_size_kg || 1) * item.quantity, 0);
+  const moqReached = totalKg >= 10;
 
   return (
     <div className="prem-page">
-      {/* PAGE HERO */}
       <section className="prem-hero">
         <div className="prem-hero-inner">
-          <span className="prem-kicker">PRODUCT CATALOG</span>
+          <span className="prem-kicker">WHOLESALE CATALOG</span>
           <h1 className="prem-hero-title">
-            The Complete <em>Collection.</em>
+            Bulk packs for <em>retailers.</em>
           </h1>
           <p className="prem-hero-sub">
-            Every batch is fried fresh the day it ships. Choose your size,
-            choose your flavour, we handle the rest.
+            1kg and 5kg packs. Fresh-fried, FSSAI certified, dispatched by
+            transport to your district. Minimum order 10kg.
           </p>
+
+          <div className="prem-hero-stats">
+            <div className="prem-hero-stat">
+              <span className="prem-hero-stat-num">1kg</span>
+              <span className="prem-hero-stat-label">Smallest Pack</span>
+            </div>
+            <div className="prem-hero-stat">
+              <span className="prem-hero-stat-num">10kg</span>
+              <span className="prem-hero-stat-label">Minimum Order</span>
+            </div>
+            <div className="prem-hero-stat">
+              <span className="prem-hero-stat-num">FSSAI</span>
+              <span className="prem-hero-stat-label">Certified Kitchen</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* TOOLBAR: SEARCH + FILTERS */}
+      {/* Retailer Status Banner */}
+      {!user && (
+        <div className="prem-b2b-banner info">
+          <div>
+            <strong>New here?</strong>
+            <span>Sign up as a retailer to place wholesale orders. Approval is quick.</span>
+          </div>
+          <a href="/signup" className="prem-admin-action gold">Register as Retailer</a>
+        </div>
+      )}
+
+      {user && !retailer && (
+        <div className="prem-b2b-banner warn">
+          <div>
+            <strong>Complete your retailer profile</strong>
+            <span>We need your shop name, GSTIN, and district before you can order.</span>
+          </div>
+          <a href="/retailer-setup" className="prem-admin-action gold">Complete Profile</a>
+        </div>
+      )}
+
+      {user && retailer?.status === 'Pending' && (
+        <div className="prem-b2b-banner warn">
+          <div>
+            <strong>Profile under review</strong>
+            <span>We are reviewing your application. You will be able to order once approved (usually within 24 hours).</span>
+          </div>
+        </div>
+      )}
+
+      {user && retailer?.status === 'Rejected' && (
+        <div className="prem-b2b-banner danger">
+          <div>
+            <strong>Application not approved</strong>
+            <span>Please contact us at 7774982725 for more information.</span>
+          </div>
+        </div>
+      )}
+
+      {/* Toolbar */}
       <div className="prem-toolbar">
         <div className="prem-search">
           <span className="prem-search-icon">
@@ -126,20 +161,10 @@ export default function Products() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search chips, categories, weights..."
+            placeholder="Search products..."
             className="prem-search-input"
           />
-          {search && (
-            <button
-              className="prem-search-clear"
-              onClick={() => setSearch('')}
-              aria-label="Clear search"
-            >
-              ✕
-            </button>
-          )}
         </div>
-
         <div className="prem-filters">
           {['All', 'Banana Chips', 'Jackfruit Chips'].map((cat) => (
             <button
@@ -153,104 +178,76 @@ export default function Products() {
         </div>
       </div>
 
-      {/* PRODUCT GRID */}
+      {/* Products Grid */}
       <div className="prem-grid">
         {loading ? (
-          [...Array(6)].map((_, i) => <SkeletonCard key={i} />)
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px 20px', color: 'var(--charcoal-500)' }}>
+            Loading catalog...
+          </div>
         ) : filtered.length === 0 ? (
           <div style={{ gridColumn: '1 / -1' }}>
             <div className="prem-empty">
-              <div className="prem-empty-icon">
-                <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </div>
               <h3 className="prem-empty-title">No products found</h3>
-              <p className="prem-empty-text">
-                Try a different search term or clear your filters to see all products.
-              </p>
-              <button
-                className="prem-empty-btn"
-                onClick={() => {
-                  setSearch('');
-                  setFilter('All');
-                }}
-              >
-                Clear Filters
-              </button>
+              <p className="prem-empty-text">Try a different search or filter.</p>
             </div>
           </div>
         ) : (
           filtered.map((product) => {
-            const outOfStock = product.stock === 0;
-            const lowStock =
-              !outOfStock && product.stock <= (product.low_stock_threshold || 10);
-            const rating = ratings[product.id];
+            const cartQty = getCartQty(product.id);
+            const isSeasonal = product.is_seasonal;
+            const isOffSeason = isSeasonal && product.is_active_this_season === false;
 
             return (
-              <article
-                key={product.id}
-                className={`prem-card ${outOfStock ? 'is-out' : ''}`}
-              >
+              <article key={product.id} className="prem-card">
                 <div className="prem-card-media">
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
-                    onClick={() => handleViewProduct(product)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  {outOfStock && (
-                    <span className="prem-card-badge">Out of Stock</span>
-                  )}
-                  {lowStock && (
-                    <span className="prem-card-badge low">
-                      Only {product.stock} left
+                  <img src={product.image_url} alt={product.name} />
+                  {isSeasonal && (
+                    <span className={`prem-card-badge ${isOffSeason ? '' : 'low'}`}>
+                      {isOffSeason ? 'Off Season' : 'In Season'}
                     </span>
                   )}
-                  <div className="prem-card-actions">
-                    <WishlistButton product={product} />
-                    <ShareButton product={product} />
-                  </div>
                 </div>
 
                 <div className="prem-card-body">
                   <span className="prem-card-cat">{product.category}</span>
-                  <h3
-                    className="prem-card-title"
-                    onClick={() => handleViewProduct(product)}
-                  >
-                    {product.name}
-                  </h3>
-                  <span className="prem-card-weight">{product.weight}</span>
+                  <h3 className="prem-card-title">{product.name}</h3>
 
-                  <button
-                    className="prem-card-rating"
-                    onClick={() => handleViewProduct(product)}
-                  >
-                    <StarRating
-                      value={rating?.avg || 0}
-                      size="0.8rem"
-                      showNumber
-                      total={rating?.count || 0}
-                    />
-                  </button>
-
-                  <div className="prem-card-foot">
-                    <span className="prem-card-price">₹{product.price}</span>
-                    {outOfStock ? (
-                      <button className="prem-card-add disabled" disabled>
-                        Sold Out
-                      </button>
-                    ) : (
-                      <button
-                        className="prem-card-add"
-                        onClick={(e) => handleAddToCart(e, product)}
-                      >
-                        Add to Cart
-                      </button>
-                    )}
+                  <div className="prem-b2b-meta">
+                    <div className="prem-b2b-meta-row">
+                      <span>Pack Size</span>
+                      <strong>{product.pack_size_kg || 1} kg</strong>
+                    </div>
+                    <div className="prem-b2b-meta-row">
+                      <span>Wholesale Rate</span>
+                      <strong>₹{product.price} / pack</strong>
+                    </div>
+                    <div className="prem-b2b-meta-row">
+                      <span>Per kg</span>
+                      <strong>₹{(product.price / (product.pack_size_kg || 1)).toFixed(0)}</strong>
+                    </div>
+                    <div className="prem-b2b-meta-row">
+                      <span>GST</span>
+                      <strong>{product.gst_percent || 5}%</strong>
+                    </div>
                   </div>
+
+                  {isOffSeason ? (
+                    <button className="prem-card-add disabled" disabled>Available in Season</button>
+                  ) : !isApprovedRetailer ? (
+                    <button className="prem-card-add disabled" disabled>
+                      {!user ? 'Login to Order' : retailer?.status === 'Pending' ? 'Awaiting Approval' : 'Retailer Only'}
+                    </button>
+                  ) : cartQty === 0 ? (
+                    <button className="prem-card-add" onClick={() => handleAdd(product)}>
+                      Add to Order
+                    </button>
+                  ) : (
+                    <div className="prem-b2b-qty">
+                      <button className="prem-qty-btn" onClick={() => updateQuantity(product.id, cartQty - 1)}>−</button>
+                      <span className="prem-qty-num">{cartQty}</span>
+                      <button className="prem-qty-btn" onClick={() => updateQuantity(product.id, cartQty + 1)}>+</button>
+                    </div>
+                  )}
                 </div>
               </article>
             );
@@ -258,31 +255,32 @@ export default function Products() {
         )}
       </div>
 
-      {/* TRUST BAND */}
-      <div className="prem-trust-band">
-        <div className="prem-trust-item">
-          <div className="prem-trust-num">FSSAI</div>
-          <div className="prem-trust-label">Certified</div>
+      {/* Sticky order bar */}
+      {cart.length > 0 && (
+        <div className="prem-b2b-sticky">
+          <div className="prem-b2b-sticky-inner">
+            <div className="prem-b2b-sticky-left">
+              <span className="prem-b2b-sticky-label">Order Sheet</span>
+              <strong className="prem-b2b-sticky-value">
+                {cart.length} {cart.length === 1 ? 'item' : 'items'} · {totalKg} kg · ₹{getTotal().toFixed(2)}
+              </strong>
+            </div>
+            <div className="prem-b2b-sticky-right">
+              {!moqReached && (
+                <span className="prem-b2b-moq-warn">
+                  Add {10 - totalKg} kg more to reach 10kg MOQ
+                </span>
+              )}
+              <a
+                href="/cart"
+                className={`prem-btn-primary ${!moqReached ? 'disabled' : ''}`}
+                style={!moqReached ? { opacity: 0.5, pointerEvents: 'none' } : {}}
+              >
+                Review Order →
+              </a>
+            </div>
+          </div>
         </div>
-        <div className="prem-trust-item">
-          <div className="prem-trust-num">100%</div>
-          <div className="prem-trust-label">Natural</div>
-        </div>
-        <div className="prem-trust-item">
-          <div className="prem-trust-num">Fresh</div>
-          <div className="prem-trust-label">Every Morning</div>
-        </div>
-        <div className="prem-trust-item">
-          <div className="prem-trust-num">COD</div>
-          <div className="prem-trust-label">Available</div>
-        </div>
-      </div>
-
-      {reviewProduct && (
-        <ReviewsModal
-          product={reviewProduct}
-          onClose={() => setReviewProduct(null)}
-        />
       )}
     </div>
   );
