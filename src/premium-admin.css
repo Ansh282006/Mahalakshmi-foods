@@ -2061,3 +2061,134 @@ body.dark-mode .prem-admin-dp-field select {
 .prem-admin-tl-dot.dispatched { background: #fb923c; }
 .prem-admin-tl-dot.delivered { background: #4CAF50; }
 .prem-admin-tl-dot.cancelled { background: #f87171; }
+
+/* ============================================
+   ADMIN PRODUCTS — B2B FORM ENHANCEMENTS
+   ============================================ */
+
+/* Search row */
+.prem-admin-search-row {
+  margin-bottom: var(--s-4);
+}
+
+.prem-admin-search {
+  width: 100%;
+  max-width: 480px;
+  padding: 14px 18px;
+  border: 1px solid var(--charcoal-900);
+  background: var(--cream-50);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: var(--charcoal-900);
+  transition: all 0.2s ease;
+}
+
+.prem-admin-search::placeholder { color: var(--charcoal-300); }
+
+.prem-admin-search:focus {
+  outline: none;
+  border-color: var(--forest-700);
+  box-shadow: 0 0 0 1px var(--forest-700);
+}
+
+/* Section divider inside edit form and modal */
+.prem-admin-edit-divider {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-600);
+  padding: 14px 0 6px;
+  margin-top: 8px;
+  border-bottom: 1px solid var(--cream-300);
+}
+
+.prem-admin-edit-divider:first-child {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* Checkbox row */
+.prem-admin-edit-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.prem-admin-edit-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--forest-700);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.prem-admin-edit-checkbox span {
+  font-size: 0.85rem;
+  color: var(--charcoal-900);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+/* Edit form inline select */
+.prem-admin-edit-form select {
+  padding: 9px 12px;
+  border: 1px solid var(--charcoal-900);
+  background: var(--cream-50);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--charcoal-900);
+}
+
+.prem-admin-edit-form select:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--forest-700);
+}
+
+/* Seasonal badges on product card */
+.prem-admin-product-badge.season-on {
+  background: var(--forest-700);
+  color: var(--cream-100);
+  top: auto;
+  bottom: 10px;
+  left: 10px;
+}
+
+.prem-admin-product-badge.season-off {
+  background: var(--charcoal-500);
+  color: var(--cream-100);
+  top: auto;
+  bottom: 10px;
+  left: 10px;
+}
+
+/* Dark mode overrides */
+body.dark-mode .prem-admin-search {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.2);
+  color: var(--cream-100);
+}
+body.dark-mode .prem-admin-search::placeholder { color: rgba(254, 253, 251, 0.3); }
+body.dark-mode .prem-admin-search:focus { border-color: var(--gold-500); }
+
+body.dark-mode .prem-admin-edit-divider {
+  color: var(--gold-400);
+  border-bottom-color: rgba(254, 253, 251, 0.08);
+}
+
+body.dark-mode .prem-admin-edit-checkbox span { color: var(--cream-100); }
+
+body.dark-mode .prem-admin-edit-form select {
+  background: var(--forest-900);
+  border-color: rgba(254, 253, 251, 0.2);
+  color: var(--cream-100);
+}
+
+body.dark-mode .prem-admin-product-badge.season-on {
+  background: var(--gold-500);
+  color: var(--forest-950);
+}
