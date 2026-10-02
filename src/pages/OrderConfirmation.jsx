@@ -3,11 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { generateInvoice } from '../utils/invoice';
+import useCompanyInfo from '../hooks/useCompanyInfo';
 
 export default function OrderConfirmation() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);
+  const company = useCompanyInfo();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -127,7 +129,7 @@ export default function OrderConfirmation() {
         <div className="prem-confirm-actions">
           <button
             className="prem-btn-primary prem-btn-gold"
-            onClick={() => generateInvoice(order, items)}
+            onClick={() => generateInvoice(order, items, company)}
           >
             Download Invoice
           </button>

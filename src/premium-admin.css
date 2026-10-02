@@ -2043,3 +2043,21 @@ body.dark-mode .prem-admin-dp-field select {
   border-color: rgba(254, 253, 251, 0.2);
   color: var(--cream-100);
 }
+
+/* ============================================
+   B2B ORDER STATUS BADGES
+   ============================================ */
+.prem-admin-badge.enquiry { color: #F9A825; }
+.prem-admin-badge.confirmed { color: #60a5fa; }
+.prem-admin-badge.packed { color: #c084fc; }
+.prem-admin-badge.dispatched { color: #fb923c; }
+.prem-admin-badge.delivered { color: #4CAF50; }
+.prem-admin-badge.cancelled { color: #f87171; }
+
+/* Timeline dots */
+.prem-admin-tl-dot.enquiry { background: #F9A825; }
+.prem-admin-tl-dot.confirmed { background: #60a5fa; }
+.prem-admin-tl-dot.packed { background: #c084fc; }
+.prem-admin-tl-dot.dispatched { background: #fb923c; }
+.prem-admin-tl-dot.delivered { background: #4CAF50; }
+.prem-admin-tl-dot.cancelled { background: #f87171; }

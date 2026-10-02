@@ -1,182 +1,175 @@
-// ============================================
-// WhatsApp Message Templates
-// 6 scenarios — customer-facing + owner-facing
-// ============================================
-
 const BRAND_NAME = 'Mahalaxmi Krushi Prakriya Udyog';
 const CONTACT = '7774982725 / 9168843668';
-const SHOP_URL = 'https://mahalakshmi-foods.vercel.app'; // update after deploy
-const TRACK_URL = `${SHOP_URL}/track`;
+const SHOP_URL = 'https://mahalakshmi-foods.vercel.app';
 
 function formatItems(items = []) {
   if (!items.length) return '  • (loading items...)';
   return items
     .map(
       (it) =>
-        `  • ${it.products?.name || 'Product'} (${it.products?.weight || ''}) × ${it.quantity} — ₹${it.price_at_time}`
+        `  • ${it.products?.name || 'Product'} (${it.pack_size_kg || 1}kg) × ${it.quantity} = ₹${(it.price_at_time * it.quantity).toFixed(0)}`
     )
     .join('\n');
 }
 
-// ---------- CUSTOMER MESSAGES ----------
-
-// 1️⃣ Order Placed — confirmation to customer
+// 1️⃣ Enquiry received
 export function msgOrderPlaced(order, items = []) {
-  return `🌿 *${BRAND_NAME}*
+  return `${BRAND_NAME}
 
-Namaste *${order.customer_name}* ji! 🙏
+Namaste *${order.customer_name}* ji,
 
-Your order has been received successfully ✅
+We have received your wholesale order enquiry.
 
-📋 Order Code: *${order.order_code}*
-📦 Items:
+Order Code: *${order.order_code}*
+
+Items:
 ${formatItems(items)}
-💰 Total: ₹${order.total_amount}
-📍 Delivery to: ${order.customer_address}
 
-We'll confirm your order shortly and keep you updated at every step.
+Total: ₹${order.total_amount}
 
-For any queries, call us:
-📞 ${CONTACT}
+Our team will confirm your order shortly. Please wait for our confirmation message before transferring any payment.
 
-Thank you for choosing us! 🌿`;
+Questions? Call us:
+${CONTACT}`;
 }
 
-// 2️⃣ Order Confirmed
+// 2️⃣ Order confirmed
 export function msgOrderConfirmed(order) {
-  return `🌿 *${BRAND_NAME}*
+  return `${BRAND_NAME}
 
-Good news *${order.customer_name}* ji! ✅
+Hello *${order.customer_name}*,
 
 Your order is *CONFIRMED*.
 
-📋 Order Code: *${order.order_code}*
-💰 Total: ₹${order.total_amount}
+Order Code: *${order.order_code}*
+Total: ₹${order.total_amount}
+Payment Mode: ${order.payment_mode || 'Advance'}
 
-We're now preparing your fresh chips. They'll be packed and ready very soon. 🌿
+We are now preparing your order. You will receive an update when it is packed and ready for dispatch.
 
-🔍 Track anytime: ${TRACK_URL}
+${order.payment_mode !== 'Credit' ? `Please transfer ₹${order.total_amount} to our account if you haven't already:\nBank: ${order.bank_name || 'Mahalaxmi Krushi Prakriya Udyog'}\nWe will share bank details on request.\n` : ''}
 
-📞 ${CONTACT}`;
+${CONTACT}`;
 }
 
-// 3️⃣ Packed & Ready
+// 3️⃣ Packed
 export function msgOrderPacked(order, items = []) {
-  return `🌿 *${BRAND_NAME}*
+  return `${BRAND_NAME}
 
-*${order.customer_name}* ji, your order is *PACKED*! 📦
+Hello *${order.customer_name}*,
 
-📋 Order Code: *${order.order_code}*
-📦 Items:
+Your wholesale order is *PACKED* and ready for dispatch.
+
+Order Code: *${order.order_code}*
+
+Items:
 ${formatItems(items)}
 
-Everything is freshly sealed and ready. We'll hand it over to delivery soon. 🚚
+Total: ₹${order.total_amount}
 
-📍 Delivery to: ${order.customer_address}
+We are arranging transport. You will receive LR details shortly.
 
-📞 ${CONTACT}`;
+${CONTACT}`;
 }
 
-// 4️⃣ Out for Delivery
-export function msgOutForDelivery(order) {
-  return `🌿 *${BRAND_NAME}*
+// 4️⃣ Dispatched
+export function msgDispatched(order) {
+  return `${BRAND_NAME}
 
-*${order.customer_name}* ji, your order is *OUT FOR DELIVERY*! 🚚
+Hello *${order.customer_name}*,
 
-📋 Order Code: *${order.order_code}*
-💰 Total: ₹${order.total_amount} (Cash on Delivery)
+Your order has been *DISPATCHED*.
 
-Our delivery partner will reach you shortly. Please keep your phone nearby. 📱
+Order Code: *${order.order_code}*
+${order.transporter_name ? `Transporter: ${order.transporter_name}` : ''}
+${order.transporter_lr ? `LR Number: ${order.transporter_lr}` : ''}
+${order.package_count ? `Packages: ${order.package_count}` : ''}
+${order.package_weight_kg ? `Total Weight: ${order.package_weight_kg} kg` : ''}
+${order.estimated_delivery ? `Expected Delivery: ${order.estimated_delivery}` : ''}
 
-📍 ${order.customer_address}
+Please track with the transporter using the LR number above.
 
-📞 ${CONTACT}`;
+For any issues, contact us:
+${CONTACT}`;
 }
 
 // 5️⃣ Delivered
 export function msgOrderDelivered(order) {
-  return `🌿 *${BRAND_NAME}*
+  return `${BRAND_NAME}
 
-*${order.customer_name}* ji, your order has been *DELIVERED* ✅
+Hello *${order.customer_name}*,
 
-📋 Order Code: *${order.order_code}*
-💰 Total: ₹${order.total_amount}
+Your order has been *DELIVERED*.
 
-We hope you enjoy your chips! 🌿
+Order Code: *${order.order_code}*
+Total: ₹${order.total_amount}
 
-If you loved them, please leave us a review — it means a lot to our small family business. ⭐
+Thank you for your business. We hope the stock sells fast.
 
-🔁 Want to reorder? Visit our store:
+Reorder anytime at:
 ${SHOP_URL}
 
-📞 ${CONTACT}`;
+${CONTACT}`;
 }
 
 // 6️⃣ Cancelled
 export function msgOrderCancelled(order) {
-  return `🌿 *${BRAND_NAME}*
+  return `${BRAND_NAME}
 
-*${order.customer_name}* ji, your order has been *CANCELLED*.
+Hello *${order.customer_name}*,
 
-📋 Order Code: *${order.order_code}*
-💰 Total: ₹${order.total_amount}
+Your order has been *CANCELLED*.
 
-We're sorry for any inconvenience. If this was a mistake or you'd like to reorder, please reply to this message or call us.
+Order Code: *${order.order_code}*
+Total: ₹${order.total_amount}
 
-📞 ${CONTACT}`;
+If this was not expected or you would like to reorder, please contact us immediately.
+
+${CONTACT}`;
 }
 
-// ---------- OWNER MESSAGE (notify owner of new order) ----------
-
+// ── Owner alert ──
 export function msgOwnerNewOrder(order, items = []) {
-  return `🔔 *NEW ORDER RECEIVED*
+  return `*NEW WHOLESALE ORDER*
 
-📋 Order Code: *${order.order_code}*
-👤 Customer: ${order.customer_name}
-📞 Phone: ${order.customer_phone}
-📍 Address: ${order.customer_address}
+Order Code: *${order.order_code}*
+Retailer: ${order.customer_name}
+Phone: ${order.customer_phone}
+Address: ${order.customer_address}
 
-📦 Items:
+Items:
 ${formatItems(items)}
 
-💰 Total: ₹${order.total_amount}
-💳 Payment: Cash on Delivery
-🕒 Status: ${order.status}
+Total: ₹${order.total_amount}
+Payment: ${order.payment_mode || 'Advance'} · ${order.payment_status || 'Pending'}
 
-Open Admin Panel to manage → ${SHOP_URL}/admin/orders`;
+Open Admin Panel: ${SHOP_URL}/admin/orders`;
 }
 
-// ---------- HELPERS ----------
-
-// Pick the right template for the current order status
 export function getTemplateForStatus(status) {
   switch (status) {
-    case 'Pending': return { fn: msgOrderPlaced, label: 'Order Placed' };
+    case 'Enquiry': return { fn: msgOrderPlaced, label: 'Enquiry Received' };
     case 'Confirmed': return { fn: msgOrderConfirmed, label: 'Order Confirmed' };
     case 'Packed': return { fn: msgOrderPacked, label: 'Order Packed' };
-    case 'Out for Delivery': return { fn: msgOutForDelivery, label: 'Out for Delivery' };
-    case 'Delivered': return { fn: msgOrderDelivered, label: 'Order Delivered' };
-    case 'Cancelled': return { fn: msgOrderCancelled, label: 'Order Cancelled' };
+    case 'Dispatched': return { fn: msgDispatched, label: 'Dispatched' };
+    case 'Delivered': return { fn: msgOrderDelivered, label: 'Delivered' };
+    case 'Cancelled': return { fn: msgOrderCancelled, label: 'Cancelled' };
     default: return { fn: msgOrderConfirmed, label: 'Order Update' };
   }
 }
 
-// Normalize phone → international format for wa.me
 export function normalizePhone(phone) {
   const clean = String(phone || '').replace(/\D/g, '');
-  // Indian numbers: add 91 prefix if 10 digits
   if (clean.length === 10) return `91${clean}`;
   if (clean.length === 12 && clean.startsWith('91')) return clean;
   return clean;
 }
 
-// Build the wa.me URL (opens WhatsApp with the message pre-filled)
 export function buildWhatsAppUrl(phone, message) {
   const number = normalizePhone(phone);
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
-// Open WhatsApp in a new tab
 export function openWhatsApp(phone, message) {
   const url = buildWhatsAppUrl(phone, message);
   window.open(url, '_blank');
