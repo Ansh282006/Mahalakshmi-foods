@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   ResponsiveContainer,
   LineChart, Line,
@@ -17,14 +17,14 @@ const RANGE_OPTIONS = [
   { label: 'ALL TIME', value: 3650 },
 ];
 
-const CATEGORY_COLORS = ['#14513E', '#C9A227', '#B8341F', '#1B6B50', '#8B5E3C'];
+const COLORS = ['#14513E', '#C9A227', '#B8341F', '#1B6B50', '#8B5E3C', '#6A1B9A'];
 
 export default function AdminAnalytics() {
   const [range, setRange] = useState(30);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
-  const [items, setItems] = useState([]);
   const [products, setProducts] = useState([]);
+  const [retailers, setRetailers] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,82 +39,150 @@ export default function AdminAnalytics() {
     const since = new Date();
     since.setDate(since.getDate() - range);
 
-    const { data: ords } = await supabase
-      .from('orders')
-      .select('*')
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: true });
+    const [ordersRes, productsRes, retailersRes] = await Promise.all([
+      supabase
+        .from('orders')
+        .select('*, order_items(quantity, price_at_time, product_id, products(name, category, pack_size_kg))')
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: true }),
+      supabase.from('products').select('*'),
+      supabase.from('retailers').select('*'),
+    ]);
 
-    const { data: prods } = await supabase.from('products').select('*');
-
-    let itms = [];
-    const orderIds = (ords || []).map((o) => o.id);
-    if (orderIds.length > 0) {
-      const { data } = await supabase.from('order_items').select('*').in('order_id', orderIds);
-      itms = data || [];
-    }
-
-    setOrders(ords || []);
-    setItems(itms);
-    setProducts(prods || []);
+    setOrders(ordersRes.data || []);
+    setProducts(productsRes.data || []);
+    setRetailers(retailersRes.data || []);
     setLoading(false);
   }
 
-  const revenueByDay = (() => {
+  // ── Compute metrics ──
+
+  // 1. Revenue & kg by day
+  const trendByDay = (() => {
     const map = {};
     orders.forEach((o) => {
       const day = new Date(o.created_at).toISOString().slice(0, 10);
-      if (!map[day]) map[day] = { date: day.slice(5), revenue: 0, orders: 0 };
-      map[day].revenue += Number(o.total_amount);
+      if (!map[day]) map[day] = { date: day.slice(5), revenue: 0, kg: 0, orders: 0 };
+      map[day].revenue += Number(o.total_amount || 0);
+      map[day].kg += (o.order_items || []).reduce(
+        (s, item) => s + (item.products?.pack_size_kg || 1) * item.quantity,
+        0
+      );
       map[day].orders += 1;
     });
     return Object.values(map).sort((a, b) => a.date.localeCompare(b.date));
   })();
 
-  const topProducts = (() => {
+  // 2. Top retailers by revenue
+  const topRetailers = (() => {
     const map = {};
-    items.forEach((it) => {
-      if (!map[it.product_id]) {
-        const prod = products.find((p) => p.id === it.product_id);
-        map[it.product_id] = {
-          name: prod ? `${prod.name} (${prod.weight})` : 'Unknown',
-          shortName: prod ? prod.name.split(' ')[0] : 'Unknown',
-          qty: 0,
+    orders.forEach((o) => {
+      const key = o.retailer_id || o.customer_name;
+      if (!map[key]) {
+        map[key] = {
+          name: o.customer_name,
+          district: o.retailers?.district || '—',
           revenue: 0,
+          orders: 0,
+          kg: 0,
         };
       }
-      map[it.product_id].qty += it.quantity;
-      map[it.product_id].revenue += it.quantity * Number(it.price_at_time);
+      map[key].revenue += Number(o.total_amount || 0);
+      map[key].orders += 1;
+      map[key].kg += (o.order_items || []).reduce(
+        (s, item) => s + (item.products?.pack_size_kg || 1) * item.quantity,
+        0
+      );
     });
-    return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    return Object.values(map)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 8);
   })();
 
-  const categoryRevenue = (() => {
+  // 3. Category split (Banana vs Jackfruit)
+  const categorySplit = (() => {
     const map = {};
-    items.forEach((it) => {
-      const prod = products.find((p) => p.id === it.product_id);
-      const cat = prod?.category || 'Other';
-      if (!map[cat]) map[cat] = { name: cat, value: 0 };
-      map[cat].value += it.quantity * Number(it.price_at_time);
+    orders.forEach((o) => {
+      (o.order_items || []).forEach((item) => {
+        const cat = item.products?.category || 'Other';
+        if (!map[cat]) map[cat] = { name: cat, kg: 0, revenue: 0 };
+        const kg = (item.products?.pack_size_kg || 1) * item.quantity;
+        map[cat].kg += kg;
+        map[cat].revenue += kg * 0 + Number(item.price_at_time) * item.quantity;
+      });
     });
     return Object.values(map);
   })();
 
-  const customerMetrics = (() => {
-    const customers = {};
+  // 4. Revenue by district
+  const districtRevenue = (() => {
+    const map = {};
     orders.forEach((o) => {
-      const key = o.customer_phone || o.customer_name;
-      customers[key] = (customers[key] || 0) + 1;
+      const d = o.retailers?.district || 'Unknown';
+      if (!map[d]) map[d] = { name: d, revenue: 0, kg: 0 };
+      map[d].revenue += Number(o.total_amount || 0);
+      map[d].kg += (o.order_items || []).reduce(
+        (s, item) => s + (item.products?.pack_size_kg || 1) * item.quantity,
+        0
+      );
     });
-    const total = Object.keys(customers).length;
-    const repeat = Object.values(customers).filter((c) => c > 1).length;
-    return { total, repeat, repeatRate: total ? ((repeat / total) * 100).toFixed(0) : '0' };
+    return Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 8);
   })();
 
-  const totalRevenue = orders.reduce((s, o) => s + Number(o.total_amount), 0);
-  const totalOrders = orders.length;
-  const avgOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
-  const bestDay = revenueByDay.reduce((best, d) => (d.revenue > (best?.revenue || 0) ? d : best), null);
+  // 5. Repeat retailer rate
+  const retailerMetrics = (() => {
+    const orderCounts = {};
+    orders.forEach((o) => {
+      const key = o.retailer_id || o.customer_name;
+      orderCounts[key] = (orderCounts[key] || 0) + 1;
+    });
+    const total = Object.keys(orderCounts).length;
+    const repeat = Object.values(orderCounts).filter((c) => c > 1).length;
+    return {
+      total,
+      repeat,
+      rate: total ? ((repeat / total) * 100).toFixed(0) : '0',
+    };
+  })();
+
+  // 6. Top products by kg
+  const topProductsByKg = (() => {
+    const map = {};
+    orders.forEach((o) => {
+      (o.order_items || []).forEach((item) => {
+        const key = item.product_id;
+        if (!map[key]) {
+          map[key] = {
+            name: item.products?.name || 'Unknown',
+            kg: 0,
+            revenue: 0,
+            packSize: item.products?.pack_size_kg || 1,
+          };
+        }
+        const kg = (item.products?.pack_size_kg || 1) * item.quantity;
+        map[key].kg += kg;
+        map[key].revenue += Number(item.price_at_time) * item.quantity;
+      });
+    });
+    return Object.values(map).sort((a, b) => b.kg - a.kg).slice(0, 5);
+  })();
+
+  // ── Totals ──
+  const totalRevenue = orders.reduce((s, o) => s + Number(o.total_amount || 0), 0);
+  const totalKg = orders.reduce(
+    (sum, o) =>
+      sum +
+      (o.order_items || []).reduce(
+        (s, item) => s + (item.products?.pack_size_kg || 1) * item.quantity,
+        0
+      ),
+    0
+  );
+  const avgOrderKg = orders.length ? totalKg / orders.length : 0;
+  const bestDay = trendByDay.reduce(
+    (best, d) => (d.revenue > (best?.revenue || 0) ? d : best),
+    null
+  );
 
   return (
     <div className="prem-admin">
@@ -125,7 +193,7 @@ export default function AdminAnalytics() {
           <div>
             <span className="prem-kicker">INSIGHTS</span>
             <h1 className="prem-admin-page-title">
-              Business <em>Analytics.</em>
+              Wholesale <em>Analytics.</em>
             </h1>
             <p className="prem-admin-page-sub">
               Performance for the last <strong>{range} days</strong>
@@ -146,65 +214,73 @@ export default function AdminAnalytics() {
         </header>
 
         {loading ? (
-          <div className="prem-admin-loading">
-            <p>Crunching the numbers...</p>
-          </div>
+          <div className="prem-admin-loading"><p>Crunching numbers...</p></div>
         ) : (
           <>
-            {/* KPI CARDS */}
+            {/* ── KPI CARDS ── */}
             <div className="prem-admin-stats">
               <div className="prem-admin-stat">
                 <span className="prem-admin-stat-label">Total Revenue</span>
                 <span className="prem-admin-stat-value">₹{totalRevenue.toFixed(0)}</span>
-                <span className="prem-admin-stat-sub">{totalOrders} orders</span>
+                <span className="prem-admin-stat-sub">{orders.length} orders</span>
               </div>
               <div className="prem-admin-stat gold">
-                <span className="prem-admin-stat-label">Avg Order Value</span>
-                <span className="prem-admin-stat-value">₹{avgOrderValue.toFixed(0)}</span>
-                <span className="prem-admin-stat-sub">per order</span>
+                <span className="prem-admin-stat-label">Volume Sold</span>
+                <span className="prem-admin-stat-value">{Math.round(totalKg)} kg</span>
+                <span className="prem-admin-stat-sub">across all orders</span>
               </div>
               <div className="prem-admin-stat">
-                <span className="prem-admin-stat-label">Total Customers</span>
-                <span className="prem-admin-stat-value">{customerMetrics.total}</span>
-                <span className="prem-admin-stat-sub">{customerMetrics.repeat} repeat buyers</span>
+                <span className="prem-admin-stat-label">Avg Order Size</span>
+                <span className="prem-admin-stat-value">{avgOrderKg.toFixed(1)} kg</span>
+                <span className="prem-admin-stat-sub">per order</span>
               </div>
               <div className="prem-admin-stat warn">
-                <span className="prem-admin-stat-label">Repeat Rate</span>
-                <span className="prem-admin-stat-value">{customerMetrics.repeatRate}%</span>
-                <span className="prem-admin-stat-sub">loyal customers</span>
+                <span className="prem-admin-stat-label">Repeat Retailers</span>
+                <span className="prem-admin-stat-value">{retailerMetrics.rate}%</span>
+                <span className="prem-admin-stat-sub">{retailerMetrics.repeat} of {retailerMetrics.total}</span>
               </div>
             </div>
 
-            {/* REVENUE TREND */}
+            {/* ── REVENUE + KG TREND ── */}
             <section className="prem-admin-section">
               <h2 className="prem-admin-section-title">
-                Revenue <em>Trend</em>
+                Revenue &amp; Volume <em>Trend</em>
                 {bestDay && (
                   <span className="prem-admin-section-count">
-                    Best: ₹{bestDay.revenue.toFixed(0)} on {bestDay.date}
+                    Best: ₹{bestDay.revenue.toFixed(0)} · {Math.round(bestDay.kg)} kg on {bestDay.date}
                   </span>
                 )}
               </h2>
               <div className="prem-admin-chart">
-                {revenueByDay.length === 0 ? (
-                  <p className="prem-admin-chart-empty">No orders in this period.</p>
+                {trendByDay.length === 0 ? (
+                  <p className="prem-admin-chart-empty">No data in this period</p>
                 ) : (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={revenueByDay}>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <LineChart data={trendByDay}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D5" vertical={false} />
                       <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={{ stroke: '#EBE3D5' }} tickLine={false} />
-                      <YAxis tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={false} tickLine={false} />
+                      <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={false} tickLine={false} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={false} tickLine={false} />
                       <Tooltip
                         contentStyle={{ borderRadius: 0, border: '1px solid #0F0F0F', fontSize: '0.85rem', background: '#FEFDFB' }}
-                        formatter={(v) => [`₹${v}`, 'Revenue']}
                       />
                       <Line
+                        yAxisId="left"
                         type="monotone"
                         dataKey="revenue"
                         stroke="#14513E"
-                        strokeWidth={2}
+                        strokeWidth={2.5}
                         dot={{ r: 3, fill: '#14513E', strokeWidth: 0 }}
-                        activeDot={{ r: 5, fill: '#C9A227', stroke: '#14513E', strokeWidth: 2 }}
+                        name="Revenue (₹)"
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="kg"
+                        stroke="#C9A227"
+                        strokeWidth={2.5}
+                        dot={{ r: 3, fill: '#C9A227', strokeWidth: 0 }}
+                        name="Volume (kg)"
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -212,26 +288,33 @@ export default function AdminAnalytics() {
               </div>
             </section>
 
-            {/* TOP PRODUCTS + CATEGORY */}
+            {/* ── TOP PRODUCTS (by kg) + CATEGORY SPLIT ── */}
             <div className="prem-admin-chart-row">
               <section className="prem-admin-section" style={{ marginBottom: 0 }}>
                 <h2 className="prem-admin-section-title">
-                  Top <em>Sellers</em>
+                  Top Products <em>by Volume</em>
                 </h2>
                 <div className="prem-admin-chart">
-                  {topProducts.length === 0 ? (
-                    <p className="prem-admin-chart-empty">No sales yet.</p>
+                  {topProductsByKg.length === 0 ? (
+                    <p className="prem-admin-chart-empty">No data</p>
                   ) : (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={topProducts} layout="vertical" margin={{ left: 10 }}>
+                    <ResponsiveContainer width="100%" height={320}>
+                      <BarChart data={topProductsByKg} layout="vertical" margin={{ left: 10 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D5" horizontal={false} />
                         <XAxis type="number" tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={{ stroke: '#EBE3D5' }} tickLine={false} />
-                        <YAxis type="category" dataKey="shortName" tick={{ fontSize: 11, fill: '#2A2A2A' }} width={80} axisLine={false} tickLine={false} />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          tick={{ fontSize: 11, fill: '#2A2A2A' }}
+                          width={110}
+                          axisLine={false}
+                          tickLine={false}
+                        />
                         <Tooltip
                           contentStyle={{ borderRadius: 0, border: '1px solid #0F0F0F', fontSize: '0.85rem', background: '#FEFDFB' }}
-                          formatter={(v, k) => (k === 'revenue' ? `₹${v}` : `${v} units`)}
+                          formatter={(v) => [`${Math.round(v)} kg`, 'Volume']}
                         />
-                        <Bar dataKey="revenue" fill="#C9A227" radius={0} />
+                        <Bar dataKey="kg" fill="#C9A227" radius={0} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -240,31 +323,31 @@ export default function AdminAnalytics() {
 
               <section className="prem-admin-section" style={{ marginBottom: 0 }}>
                 <h2 className="prem-admin-section-title">
-                  Revenue by <em>Category</em>
+                  Category <em>Split</em>
                 </h2>
                 <div className="prem-admin-chart">
-                  {categoryRevenue.length === 0 ? (
-                    <p className="prem-admin-chart-empty">No data yet.</p>
+                  {categorySplit.length === 0 ? (
+                    <p className="prem-admin-chart-empty">No data</p>
                   ) : (
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={320}>
                       <PieChart>
                         <Pie
-                          data={categoryRevenue}
-                          dataKey="value"
+                          data={categorySplit}
+                          dataKey="kg"
                           nameKey="name"
-                          outerRadius={90}
-                          innerRadius={50}
+                          outerRadius={100}
+                          innerRadius={55}
                           paddingAngle={2}
                           label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                           labelLine={false}
                         >
-                          {categoryRevenue.map((entry, idx) => (
-                            <Cell key={idx} fill={CATEGORY_COLORS[idx % CATEGORY_COLORS.length]} />
+                          {categorySplit.map((entry, idx) => (
+                            <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
                           ))}
                         </Pie>
                         <Tooltip
                           contentStyle={{ borderRadius: 0, border: '1px solid #0F0F0F', fontSize: '0.85rem', background: '#FEFDFB' }}
-                          formatter={(v) => `₹${v}`}
+                          formatter={(v) => [`${Math.round(v)} kg`, 'Volume']}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -273,33 +356,62 @@ export default function AdminAnalytics() {
               </section>
             </div>
 
-            {/* PRODUCT PERFORMANCE TABLE */}
+            {/* ── REVENUE BY DISTRICT ── */}
             <section className="prem-admin-section" style={{ marginTop: 'var(--s-5)' }}>
               <h2 className="prem-admin-section-title">
-                Product <em>Performance</em>
-                <span className="prem-admin-section-count">{topProducts.length} products</span>
+                Revenue by <em>District</em>
+              </h2>
+              <div className="prem-admin-chart">
+                {districtRevenue.length === 0 ? (
+                  <p className="prem-admin-chart-empty">No data</p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={320}>
+                    <BarChart data={districtRevenue}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D5" vertical={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={{ stroke: '#EBE3D5' }} tickLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: '#6B6B6B' }} axisLine={false} tickLine={false} />
+                      <Tooltip
+                        contentStyle={{ borderRadius: 0, border: '1px solid #0F0F0F', fontSize: '0.85rem', background: '#FEFDFB' }}
+                        formatter={(v, k) => (k === 'revenue' ? `₹${v.toFixed(0)}` : `${Math.round(v)} kg`)}
+                      />
+                      <Bar dataKey="revenue" fill="#14513E" radius={0} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </section>
+
+            {/* ── TOP RETAILERS TABLE ── */}
+            <section className="prem-admin-section">
+              <h2 className="prem-admin-section-title">
+                Top <em>Retailers</em>
+                <span className="prem-admin-section-count">{topRetailers.length} ranked</span>
               </h2>
               <div className="prem-admin-table-wrap">
                 <table className="prem-admin-table">
                   <thead>
                     <tr>
                       <th>Rank</th>
-                      <th>Product</th>
-                      <th>Units Sold</th>
+                      <th>Retailer</th>
+                      <th>District</th>
+                      <th>Orders</th>
+                      <th>Volume</th>
                       <th>Revenue</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {topProducts.map((p, idx) => (
+                    {topRetailers.map((r, idx) => (
                       <tr key={idx}>
                         <td><strong>{idx + 1}</strong></td>
-                        <td>{p.name}</td>
-                        <td>{p.qty}</td>
-                        <td className="revenue-cell">₹{p.revenue.toFixed(0)}</td>
+                        <td>{r.name}</td>
+                        <td>{r.district}</td>
+                        <td>{r.orders}</td>
+                        <td>{Math.round(r.kg)} kg</td>
+                        <td className="revenue-cell">₹{r.revenue.toFixed(0)}</td>
                       </tr>
                     ))}
-                    {topProducts.length === 0 && (
-                      <tr><td colSpan="4" className="empty-row">No sales in this period</td></tr>
+                    {topRetailers.length === 0 && (
+                      <tr><td colSpan="6" className="empty-row">No orders in this period</td></tr>
                     )}
                   </tbody>
                 </table>

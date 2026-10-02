@@ -4,10 +4,18 @@ import { supabase } from '../supabaseClient';
 import AdminSidebar from '../components/AdminSidebar';
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({ orders: 0, revenue: 0, products: 0, pending: 0 });
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    revenue: 0,
+    totalKg: 0,
+    pendingOrders: 0,
+    pendingRetailers: 0,
+    pendingPayments: 0,
+    lowStock: 0,
+    activeRetailers: 0,
+  });
   const [recentOrders, setRecentOrders] = useState([]);
-  const [lowStock, setLowStock] = useState([]);
-  const [outOfStock, setOutOfStock] = useState([]);
+  const [districtSplit, setDistrictSplit] = useState([]);
   const [adminEmail, setAdminEmail] = useState('');
   const navigate = useNavigate();
 
@@ -19,38 +27,88 @@ export default function AdminDashboard() {
       }
       setAdminEmail(data.session.user.email);
     });
-
-    async function fetchData() {
-      const { data: orders } = await supabase.from('orders').select('*');
-      const { data: products } = await supabase.from('products').select('*');
-
-      if (orders) {
-        setStats({
-          orders: orders.length,
-          revenue: orders.reduce((sum, o) => sum + Number(o.total_amount), 0),
-          products: products?.length || 0,
-          pending: orders.filter((o) => o.status === 'Pending').length,
-        });
-        setRecentOrders(orders.slice(-5).reverse());
-      }
-      if (products) {
-        setLowStock(products.filter((p) => p.stock > 0 && p.stock <= (p.low_stock_threshold || 10)));
-        setOutOfStock(products.filter((p) => p.stock === 0));
-      }
-    }
-    fetchData();
+    fetchDashboard();
   }, [navigate]);
 
-  const totalAlerts = lowStock.length + outOfStock.length;
+  async function fetchDashboard() {
+    // Fetch in parallel
+    const [ordersRes, productsRes, retailersRes] = await Promise.all([
+      supabase.from('orders').select('*, order_items(quantity, price_at_time, products(pack_size_kg))'),
+      supabase.from('products').select('*'),
+      supabase.from('retailers').select('*'),
+    ]);
 
-  const sidebarCounts = {
-    orders: stats.pending,
-    lowstock: totalAlerts,
-  };
+    const orders = ordersRes.data || [];
+    const products = productsRes.data || [];
+    const retailers = retailersRes.data || [];
+
+    // ── Compute stats ──
+    const revenue = orders.reduce((s, o) => s + Number(o.total_amount || 0), 0);
+    const totalKg = orders.reduce((sum, o) => {
+      const kg = (o.order_items || []).reduce((s, item) => {
+        const packSize = item.products?.pack_size_kg || 1;
+        return s + packSize * item.quantity;
+      }, 0);
+      return sum + kg;
+    }, 0);
+
+    const pendingOrders = orders.filter((o) =>
+      ['Enquiry', 'Confirmed', 'Packed'].includes(o.status)
+    ).length;
+
+    const pendingPayments = orders
+      .filter((o) => ['Pending', 'Partial', 'Credit'].includes(o.payment_status))
+      .reduce((s, o) => s + Number(o.total_amount || 0), 0);
+
+    const pendingRetailers = retailers.filter((r) => r.status === 'Pending').length;
+    const activeRetailers = retailers.filter((r) => r.status === 'Approved').length;
+
+    const lowStock = products.filter(
+      (p) => p.stock > 0 && p.stock <= (p.low_stock_threshold || 10)
+    ).length;
+
+    setStats({
+      totalOrders: orders.length,
+      revenue,
+      totalKg: Math.round(totalKg),
+      pendingOrders,
+      pendingRetailers,
+      pendingPayments,
+      lowStock,
+      activeRetailers,
+    });
+
+    // ── Recent orders ──
+    setRecentOrders(orders.slice(-6).reverse());
+
+    // ── District split ──
+    const distMap = {};
+    orders.forEach((o) => {
+      const district = o.retailers?.district || 'Unknown';
+      if (!distMap[district]) distMap[district] = { district, orders: 0, revenue: 0, kg: 0 };
+      distMap[district].orders += 1;
+      distMap[district].revenue += Number(o.total_amount || 0);
+      distMap[district].kg += (o.order_items || []).reduce(
+        (s, item) => s + (item.products?.pack_size_kg || 1) * item.quantity,
+        0
+      );
+    });
+    const districts = Object.values(distMap)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+    setDistrictSplit(districts);
+  }
 
   return (
     <div className="prem-admin">
-      <AdminSidebar counts={sidebarCounts} active="/admin/dashboard" />
+      <AdminSidebar
+        counts={{
+          orders: stats.pendingOrders,
+          lowstock: stats.lowStock,
+          retailers: stats.pendingRetailers,
+        }}
+        active="/admin/dashboard"
+      />
 
       <main className="prem-admin-main">
         <header className="prem-admin-topbar">
@@ -64,37 +122,51 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="prem-admin-top-actions">
-            <Link to="/" className="prem-admin-action">View Store</Link>
+            <Link to="/" className="prem-admin-action">View Site</Link>
             <Link to="/admin/orders" className="prem-admin-action primary">Manage Orders</Link>
           </div>
         </header>
 
-        {/* STATS */}
+        {/* ── PRIMARY KPIs ── */}
         <div className="prem-admin-stats">
           <div className="prem-admin-stat">
-            <span className="prem-admin-stat-label">Total Orders</span>
-            <span className="prem-admin-stat-value">{stats.orders}</span>
-            <span className="prem-admin-stat-sub">All-time orders received</span>
-          </div>
-          <div className="prem-admin-stat gold">
             <span className="prem-admin-stat-label">Total Revenue</span>
             <span className="prem-admin-stat-value">₹{stats.revenue.toFixed(0)}</span>
-            <span className="prem-admin-stat-sub">Cash on Delivery</span>
+            <span className="prem-admin-stat-sub">{stats.totalOrders} orders</span>
+          </div>
+          <div className="prem-admin-stat gold">
+            <span className="prem-admin-stat-label">Volume Sold</span>
+            <span className="prem-admin-stat-value">{stats.totalKg} kg</span>
+            <span className="prem-admin-stat-sub">across all orders</span>
           </div>
           <div className="prem-admin-stat">
-            <span className="prem-admin-stat-label">Products</span>
-            <span className="prem-admin-stat-value">{stats.products}</span>
-            <span className="prem-admin-stat-sub">Active in catalog</span>
+            <span className="prem-admin-stat-label">Active Retailers</span>
+            <span className="prem-admin-stat-value">{stats.activeRetailers}</span>
+            <span className="prem-admin-stat-sub">{stats.pendingRetailers} pending approval</span>
           </div>
-          <div className={`prem-admin-stat ${stats.pending > 0 ? 'alert' : ''}`}>
-            <span className="prem-admin-stat-label">Pending Orders</span>
-            <span className="prem-admin-stat-value">{stats.pending}</span>
-            <span className="prem-admin-stat-sub">Need attention</span>
+          <div className={`prem-admin-stat ${stats.pendingOrders > 0 ? 'alert' : ''}`}>
+            <span className="prem-admin-stat-label">Open Orders</span>
+            <span className="prem-admin-stat-value">{stats.pendingOrders}</span>
+            <span className="prem-admin-stat-sub">need action</span>
           </div>
         </div>
 
-        {/* ALERT BANNER */}
-        {totalAlerts > 0 && (
+        {/* ── SECONDARY KPIs ── */}
+        <div className="prem-admin-stats secondary">
+          <div className="prem-admin-stat warn">
+            <span className="prem-admin-stat-label">Pending Payments</span>
+            <span className="prem-admin-stat-value">₹{stats.pendingPayments.toFixed(0)}</span>
+            <span className="prem-admin-stat-sub">outstanding from retailers</span>
+          </div>
+          <div className="prem-admin-stat">
+            <span className="prem-admin-stat-label">Low Stock Products</span>
+            <span className="prem-admin-stat-value">{stats.lowStock}</span>
+            <span className="prem-admin-stat-sub">reorder soon</span>
+          </div>
+        </div>
+
+        {/* ── ALERT BANNER ── */}
+        {(stats.pendingRetailers > 0 || stats.lowStock > 0) && (
           <div className="prem-admin-alert">
             <div className="prem-admin-alert-icon">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -104,45 +176,46 @@ export default function AdminDashboard() {
               </svg>
             </div>
             <div className="prem-admin-alert-text">
-              <strong>
-                {totalAlerts} stock {totalAlerts === 1 ? 'alert' : 'alerts'} need attention
-              </strong>
+              <strong>Action needed</strong>
               <span>
-                {outOfStock.length > 0 && `${outOfStock.length} out of stock`}
-                {outOfStock.length > 0 && lowStock.length > 0 && ' · '}
-                {lowStock.length > 0 && `${lowStock.length} running low`}
+                {stats.pendingRetailers > 0 && `${stats.pendingRetailers} retailer applications pending`}
+                {stats.pendingRetailers > 0 && stats.lowStock > 0 && ' · '}
+                {stats.lowStock > 0 && `${stats.lowStock} products running low`}
               </span>
             </div>
-            <Link to="/admin/products" className="prem-admin-alert-action">Manage Stock</Link>
+            <Link
+              to={stats.pendingRetailers > 0 ? '/admin/retailers' : '/admin/products'}
+              className="prem-admin-alert-action"
+            >
+              Review Now
+            </Link>
           </div>
         )}
 
-        {/* LOW STOCK */}
-        {lowStock.length > 0 && (
+        {/* ── DISTRICT SPLIT ── */}
+        {districtSplit.length > 0 && (
           <section className="prem-admin-section">
             <h2 className="prem-admin-section-title">
-              Low Stock <em>Warning</em>
-              <span className="prem-admin-section-count">{lowStock.length} products</span>
+              Top <em>Districts</em>
+              <span className="prem-admin-section-count">{districtSplit.length} showing</span>
             </h2>
             <div className="prem-admin-table-wrap">
               <table className="prem-admin-table">
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Weight</th>
-                    <th>Category</th>
-                    <th>Stock Left</th>
-                    <th>Status</th>
+                    <th>District</th>
+                    <th>Orders</th>
+                    <th>Volume</th>
+                    <th>Revenue</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {lowStock.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.name}</td>
-                      <td>{p.weight}</td>
-                      <td>{p.category}</td>
-                      <td><strong>{p.stock}</strong></td>
-                      <td><span className="prem-admin-badge pending">Low</span></td>
+                  {districtSplit.map((d) => (
+                    <tr key={d.district}>
+                      <td><strong>{d.district}</strong></td>
+                      <td>{d.orders}</td>
+                      <td>{Math.round(d.kg)} kg</td>
+                      <td className="revenue-cell">₹{d.revenue.toFixed(0)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -151,7 +224,7 @@ export default function AdminDashboard() {
           </section>
         )}
 
-        {/* RECENT ORDERS */}
+        {/* ── RECENT ORDERS ── */}
         <section className="prem-admin-section">
           <h2 className="prem-admin-section-title">
             Recent <em>Orders</em>
@@ -164,29 +237,37 @@ export default function AdminDashboard() {
               <thead>
                 <tr>
                   <th>Order Code</th>
+                  <th>Retailer</th>
                   <th>Date</th>
-                  <th>Customer</th>
+                  <th>Volume</th>
                   <th>Total</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.map((o) => (
-                  <tr key={o.id}>
-                    <td className="order-code-cell">{o.order_code || '—'}</td>
-                    <td>{new Date(o.created_at).toLocaleDateString('en-IN')}</td>
-                    <td>{o.customer_name}</td>
-                    <td className="revenue-cell">₹{o.total_amount}</td>
-                    <td>
-                      <span className={`prem-admin-badge ${o.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                        {o.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {recentOrders.map((o) => {
+                  const kg = (o.order_items || []).reduce(
+                    (s, item) => s + (item.products?.pack_size_kg || 1) * item.quantity,
+                    0
+                  );
+                  return (
+                    <tr key={o.id}>
+                      <td className="order-code-cell">{o.order_code || '—'}</td>
+                      <td>{o.customer_name}</td>
+                      <td>{new Date(o.created_at).toLocaleDateString('en-IN')}</td>
+                      <td>{Math.round(kg)} kg</td>
+                      <td className="revenue-cell">₹{o.total_amount}</td>
+                      <td>
+                        <span className={`prem-admin-badge ${o.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                          {o.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {recentOrders.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="empty-row">No orders yet</td>
+                    <td colSpan="6" className="empty-row">No orders yet</td>
                   </tr>
                 )}
               </tbody>

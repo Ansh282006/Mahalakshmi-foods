@@ -2192,3 +2192,17 @@ body.dark-mode .prem-admin-product-badge.season-on {
   background: var(--gold-500);
   color: var(--forest-950);
 }
+
+/* ============================================
+   ADMIN — SECONDARY STATS ROW
+   ============================================ */
+.prem-admin-stats.secondary {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-top: calc(var(--s-3) * -1);
+  margin-bottom: var(--s-5);
+}
+
+.prem-admin-stats.secondary .prem-admin-stat {
+  background: var(--cream-100);
+  border-left-width: 2px;
+}
