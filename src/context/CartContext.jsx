@@ -49,17 +49,13 @@ export function CartProvider({ children }) {
 
   const getTotal = () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const getItemCount = () => cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  // NEW: total weight in kg
   const getTotalKg = () =>
     cart.reduce((sum, item) => sum + (item.pack_size_kg || 1) * item.quantity, 0);
-
-  // NEW: GST total
   const getGstTotal = () =>
     cart.reduce((sum, item) => {
       const lineTotal = item.price * item.quantity;
       const gstRate = item.gst_percent || 5;
-      return sum + (lineTotal * gstRate) / (100 + gstRate); // inclusive
+      return sum + (lineTotal * gstRate) / (100 + gstRate);
     }, 0);
 
   return (
