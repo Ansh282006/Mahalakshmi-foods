@@ -1,85 +1,121 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import PincodeChecker from '../components/PincodeChecker';
-import CouponInput from '../components/CouponInput';
+
+// ── Bank details — replace with actual values before going live ──
+const BANK_DETAILS = {
+  account_name: 'Mahalaxmi Krushi Prakriya Udyog',
+  account_number: 'XXXXXXXXXXXX', // replace
+  ifsc: 'XXXXXXXX', // replace
+  bank_name: 'Bank Name', // replace
+  upi_id: 'mahalaxmi@upi', // replace
+};
 
 export default function Checkout() {
-  const { cart, getTotal, clearCart } = useCart();
+  const { cart, getTotal, getTotalKg, getGstTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', phone: '', address: '' });
+
+  const [retailer, setRetailer] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [pincodeServiceable, setPincodeServiceable] = useState(null);
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [userPoints, setUserPoints] = useState(0);
-  const [usePoints, setUsePoints] = useState(false);
 
+  const [form, setForm] = useState({
+    delivery_address: '',
+    delivery_district: '',
+    delivery_pincode: '',
+    po_number: '',
+    payment_mode: 'Advance',
+    payment_reference: '',
+    transporter_preference: '',
+    internal_notes: '',
+  });
+
+  // Fetch retailer info
   useEffect(() => {
-    if (user) {
-      setForm((prev) => ({
-        ...prev,
-        name: prev.name || user.user_metadata?.full_name || '',
-        phone: prev.phone || user.user_metadata?.phone || '',
-      }));
-      loadPoints();
+    if (!user) {
+      navigate('/login');
+      return;
     }
-  }, [user]);
-
-  async function loadPoints() {
-    const { data } = await supabase
-      .from('loyalty_points')
-      .select('points, type')
-      .eq('user_id', user.id);
-    if (data) {
-      const earned = data.filter((p) => p.type === 'earned').reduce((s, p) => s + p.points, 0);
-      const redeemed = data.filter((p) => p.type === 'redeemed').reduce((s, p) => s + p.points, 0);
-      setUserPoints(earned - redeemed);
+    async function fetchRetailer() {
+      const { data } = await supabase
+        .from('retailers')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setRetailer(data);
+      if (data) {
+        setForm((prev) => ({
+          ...prev,
+          delivery_address: data.address || '',
+          delivery_district: data.district || '',
+          delivery_pincode: data.pincode || '',
+        }));
+      }
+      setLoading(false);
     }
-  }
+    fetchRetailer();
+  }, [user, navigate]);
 
   const subtotal = getTotal();
-  const couponDiscount = appliedCoupon?.discount || 0;
-
-  // Points: 100 points = ₹50
-  const maxPointsValue = Math.floor(userPoints / 100) * 50;
-  const pointsDiscount = usePoints ? Math.min(maxPointsValue, subtotal - couponDiscount) : 0;
-  const pointsUsed = usePoints ? Math.ceil(pointsDiscount / 50) * 100 : 0;
-
-  const finalTotal = Math.max(subtotal - couponDiscount - pointsDiscount, 0);
+  const totalKg = getTotalKg();
+  const gstTotal = getGstTotal();
+  const moqReached = totalKg >= 10;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (pincodeServiceable === false) {
-      toast.error('Delivery not available at your pincode');
+    if (!retailer || retailer.status !== 'Approved') {
+      toast.error('Your retailer account is not approved yet');
+      return;
+    }
+    if (!moqReached) {
+      toast.error('Minimum order is 10kg');
+      return;
+    }
+    if (!form.delivery_address.trim()) {
+      toast.error('Delivery address is required');
       return;
     }
 
     setSubmitting(true);
-    const toastId = toast.loading('Placing your order...');
+    const toastId = toast.loading('Submitting order...');
 
     try {
+      // Generate reference code
+      const refNumber = `PO-${Date.now().toString().slice(-8)}`;
+
+      // Determine initial status based on payment terms
+      const initialStatus = retailer.payment_terms === 'Credit' ? 'Confirmed' : 'Enquiry';
+      const paymentStatus = retailer.payment_terms === 'Credit' ? 'Credit' : 'Pending';
+
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
-          customer_name: form.name,
-          customer_phone: form.phone,
-          customer_address: form.address,
-          total_amount: finalTotal,
-          status: 'Pending',
-          user_id: user?.id || null,
-          coupon_code: appliedCoupon?.code || null,
-          discount_amount: couponDiscount + pointsDiscount,
+          customer_name: retailer.shop_name,
+          customer_phone: retailer.phone,
+          customer_address: form.delivery_address.trim(),
+          total_amount: subtotal,
+          subtotal: subtotal,
+          gst_amount: gstTotal,
+          status: initialStatus,
+          order_type: 'B2B',
+          user_id: user.id,
+          retailer_id: retailer.id,
+          payment_status: paymentStatus,
+          payment_mode: retailer.payment_terms || 'Advance',
+          payment_reference: form.payment_reference.trim() || null,
+          internal_notes: `PO: ${form.po_number || 'Not provided'} | Kg: ${totalKg} | District: ${form.delivery_district} | Transporter pref: ${form.transporter_preference || 'None'} | Notes: ${form.internal_notes || 'None'}`,
         })
         .select()
         .single();
 
       if (orderError) throw orderError;
 
+      // Insert order items
       const items = cart.map((item) => ({
         order_id: order.id,
         product_id: item.id,
@@ -89,25 +125,8 @@ export default function Checkout() {
       const { error: itemsError } = await supabase.from('order_items').insert(items);
       if (itemsError) throw itemsError;
 
-      // Increment coupon usage
-      if (appliedCoupon?.code) {
-        await supabase.rpc('increment_coupon_usage', { coupon_code: appliedCoupon.code });
-      }
-
-      // Deduct points if used
-      if (usePoints && pointsUsed > 0) {
-        await supabase.from('loyalty_points').insert({
-          user_id: user.id,
-          points: pointsUsed,
-          type: 'redeemed',
-          source: 'order',
-          order_id: order.id,
-          description: `Redeemed on order ${order.order_code || ''}`,
-        });
-      }
-
       clearCart();
-      toast.success('Order placed! 🎉', { id: toastId });
+      toast.success('Order submitted', { id: toastId });
       navigate(`/order-confirmed/${order.id}`);
     } catch (err) {
       toast.error('Error: ' + err.message, { id: toastId });
@@ -115,140 +134,276 @@ export default function Checkout() {
     }
   };
 
-  if (cart.length === 0) {
+  if (loading) {
     return (
-      <div className="app-container">
-        <h1 className="page-title">Checkout</h1>
-        <div className="empty-cart"><p>Your cart is empty 😢</p></div>
+      <div className="prem-page">
+        <div className="prem-empty-cart"><p className="prem-empty-cart-text">Loading...</p></div>
       </div>
     );
   }
 
+  if (!retailer || retailer.status !== 'Approved') {
+    return (
+      <div className="prem-page">
+        <div className="prem-empty-cart">
+          <h2 className="prem-empty-cart-title">Retailer approval required</h2>
+          <p className="prem-empty-cart-text">
+            {!retailer
+              ? 'Please complete your retailer profile to place wholesale orders.'
+              : retailer.status === 'Pending'
+              ? 'Your application is under review. You can order once approved.'
+              : 'Your account is not currently active. Contact us at 7774982725.'}
+          </p>
+          <Link to={!retailer ? '/retailer-setup' : '/products'} className="prem-btn-primary">
+            {!retailer ? 'Complete Profile' : 'Back to Catalog'}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (cart.length === 0) {
+    return (
+      <div className="prem-page">
+        <div className="prem-empty-cart">
+          <h2 className="prem-empty-cart-title">Your order sheet is empty</h2>
+          <p className="prem-empty-cart-text">Add products to the order sheet before checking out.</p>
+          <Link to="/products" className="prem-btn-primary">Browse Catalog</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const isCredit = retailer.payment_terms === 'Credit';
+
   return (
-    <div className="app-container">
-      <h1 className="page-title">Checkout</h1>
-      <div className="checkout-grid">
-        <PincodeChecker
-          compact
-          onServiceable={(isServiceable) => setPincodeServiceable(isServiceable)}
-        />
+    <div className="prem-page">
+      <section className="prem-hero">
+        <div className="prem-hero-inner">
+          <span className="prem-kicker">CONFIRM ORDER</span>
+          <h1 className="prem-hero-title">
+            Final step, <em>{retailer.shop_name}.</em>
+          </h1>
+          <p className="prem-hero-sub">
+            Review your order and confirm delivery details. We will confirm your
+            order and share the dispatch plan within 24 hours.
+          </p>
+        </div>
+      </section>
 
-        {!user && (
-          <div className="guest-notice">
-            Checking out as a <strong>guest</strong>.{' '}
-            <a href="/login">Sign in</a> to save details and earn loyalty points.
-          </div>
-        )}
+      <div className="prem-cart-layout">
+        {/* LEFT: FORM */}
+        <div>
+          <form onSubmit={handleSubmit}>
+            {/* Delivery Address */}
+            <section className="prem-checkout-section">
+              <h2 className="prem-checkout-section-title">
+                <span className="prem-checkout-section-num">01</span>
+                Delivery Address
+              </h2>
 
-        <div className="checkout-summary-card">
-          <h3>Order Summary</h3>
-          <div className="checkout-summary-list">
-            {cart.map((item) => (
-              <div key={item.id} className="checkout-summary-item">
-                <img src={item.image_url} alt={item.name} />
-                <div className="checkout-summary-info">
-                  <strong>{item.name}</strong>
-                  <span>{item.weight} × {item.quantity}</span>
-                </div>
-                <span className="checkout-summary-price">
-                  ₹{(item.price * item.quantity).toFixed(0)}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="coupon-section">
-            <CouponInput
-              subtotal={subtotal}
-              appliedCoupon={appliedCoupon}
-              onApply={(c) => setAppliedCoupon(c)}
-              onRemove={() => setAppliedCoupon(null)}
-            />
-          </div>
-
-          {/* Loyalty Points Redemption */}
-          {user && userPoints >= 100 && (
-            <div className="points-redeem-section">
-              <label className="points-redeem-label">
-                <input
-                  type="checkbox"
-                  checked={usePoints}
-                  onChange={(e) => setUsePoints(e.target.checked)}
+              <div className="prem-field">
+                <label>Full Delivery Address</label>
+                <textarea
+                  value={form.delivery_address}
+                  onChange={(e) => setForm({ ...form, delivery_address: e.target.value })}
+                  placeholder="Shop No / Street / Area / Taluka / District"
+                  required
                 />
-                <span className="checkmark"></span>
-                <div className="points-redeem-info">
-                  <strong>Use {pointsUsed || Math.floor(userPoints / 100) * 100} Loyalty Points</strong>
-                  <span>Save ₹{usePoints ? pointsDiscount.toFixed(0) : Math.floor(userPoints / 100) * 50}</span>
-                </div>
-              </label>
-              <div className="points-balance-note">
-                Available balance: {userPoints} points (≈ ₹{maxPointsValue})
               </div>
-            </div>
-          )}
 
-          <div className="checkout-totals">
-            <div className="checkout-total-row">
-              <span>Subtotal</span>
-              <span>₹{subtotal.toFixed(2)}</span>
-            </div>
-            {couponDiscount > 0 && (
-              <div className="checkout-total-row discount">
-                <span>Coupon Discount</span>
-                <span>−₹{couponDiscount.toFixed(2)}</span>
+              <div className="prem-field-row">
+                <div className="prem-field">
+                  <label>District</label>
+                  <input
+                    type="text"
+                    value={form.delivery_district}
+                    onChange={(e) => setForm({ ...form, delivery_district: e.target.value })}
+                    placeholder="e.g. Kolhapur"
+                  />
+                </div>
+                <div className="prem-field">
+                  <label>Pincode</label>
+                  <input
+                    type="text"
+                    value={form.delivery_pincode}
+                    onChange={(e) => setForm({ ...form, delivery_pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                    placeholder="416001"
+                  />
+                </div>
               </div>
-            )}
-            {pointsDiscount > 0 && (
-              <div className="checkout-total-row discount">
-                <span>Points Redemption</span>
-                <span>−₹{pointsDiscount.toFixed(2)}</span>
+            </section>
+
+            {/* Order Details */}
+            <section className="prem-checkout-section">
+              <h2 className="prem-checkout-section-title">
+                <span className="prem-checkout-section-num">02</span>
+                Order Details
+              </h2>
+
+              <div className="prem-field">
+                <label>Your PO / Reference Number (Optional)</label>
+                <input
+                  type="text"
+                  value={form.po_number}
+                  onChange={(e) => setForm({ ...form, po_number: e.target.value })}
+                  placeholder="Your internal reference — helps you track on your side"
+                />
               </div>
-            )}
-            <div className="checkout-total-row grand">
-              <span>Total</span>
-              <strong>₹{finalTotal.toFixed(2)}</strong>
-            </div>
-          </div>
+
+              <div className="prem-field">
+                <label>Transporter Preference (Optional)</label>
+                <input
+                  type="text"
+                  value={form.transporter_preference}
+                  onChange={(e) => setForm({ ...form, transporter_preference: e.target.value })}
+                  placeholder="e.g. VRL, TCI, local tempo — leave blank for us to decide"
+                />
+              </div>
+
+              <div className="prem-field">
+                <label>Notes for Us (Optional)</label>
+                <textarea
+                  value={form.internal_notes}
+                  onChange={(e) => setForm({ ...form, internal_notes: e.target.value })}
+                  placeholder="Any special instructions for this order..."
+                />
+              </div>
+            </section>
+
+            {/* Payment */}
+            <section className="prem-checkout-section">
+              <h2 className="prem-checkout-section-title">
+                <span className="prem-checkout-section-num">03</span>
+                Payment
+              </h2>
+
+              {isCredit ? (
+                <div className="prem-cod-note">
+                  <div>
+                    <strong>Credit Account</strong>
+                    <span>
+                      Your account is on credit terms. Invoice will be raised on dispatch.
+                      Credit limit: <strong>₹{retailer.credit_limit || 0}</strong> ·
+                      Current outstanding: <strong>₹{retailer.credit_used || 0}</strong>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="prem-b2b-bank">
+                    <div className="prem-b2b-bank-head">
+                      <span className="prem-kicker">PAYMENT INSTRUCTIONS</span>
+                      <h3>100% Advance Payment</h3>
+                      <p>
+                        Please transfer the total amount to the bank account below
+                        and enter the transaction reference in the next field.
+                        We will dispatch once payment is received.
+                      </p>
+                    </div>
+
+                    <div className="prem-b2b-bank-grid">
+                      <div className="prem-b2b-bank-row">
+                        <span>Account Name</span>
+                        <strong>{BANK_DETAILS.account_name}</strong>
+                      </div>
+                      <div className="prem-b2b-bank-row">
+                        <span>Account Number</span>
+                        <strong>{BANK_DETAILS.account_number}</strong>
+                      </div>
+                      <div className="prem-b2b-bank-row">
+                        <span>IFSC Code</span>
+                        <strong>{BANK_DETAILS.ifsc}</strong>
+                      </div>
+                      <div className="prem-b2b-bank-row">
+                        <span>Bank</span>
+                        <strong>{BANK_DETAILS.bank_name}</strong>
+                      </div>
+                      <div className="prem-b2b-bank-row">
+                        <span>UPI ID</span>
+                        <strong>{BANK_DETAILS.upi_id}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="prem-field" style={{ marginTop: 'var(--s-4)' }}>
+                    <label>Payment Reference / UTR Number (Optional)</label>
+                    <input
+                      type="text"
+                      value={form.payment_reference}
+                      onChange={(e) => setForm({ ...form, payment_reference: e.target.value })}
+                      placeholder="Enter UTR or transaction reference after transfer"
+                    />
+                    <span style={{ fontSize: '0.75rem', color: 'var(--charcoal-500)', marginTop: '4px' }}>
+                      Skip this if you will pay after we confirm the order.
+                    </span>
+                  </div>
+                </>
+              )}
+            </section>
+
+            <button
+              type="submit"
+              className="prem-btn-primary"
+              disabled={submitting}
+              style={{ width: '100%', padding: '20px' }}
+            >
+              {submitting ? 'Submitting...' : isCredit ? 'Place Order on Credit' : 'Submit Order'}
+            </button>
+
+            <p className="prem-bulk-note">
+              {isCredit
+                ? 'We will dispatch on credit terms as per your account agreement.'
+                : 'Our team will confirm your order on WhatsApp within 4 hours.'}
+            </p>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="checkout-form">
-          <label>Full Name</label>
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="e.g. Ansh Patil"
-            required
-          />
+        {/* RIGHT: SUMMARY */}
+        <aside className="prem-summary">
+          <h3 className="prem-summary-title">
+            Order Summary
+            <span className="prem-summary-title-count">{totalKg} kg</span>
+          </h3>
 
-          <label>Phone Number</label>
-          <input
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="10-digit mobile number"
-            pattern="[0-9]{10}"
-            required
-          />
+          {cart.map((item) => (
+            <div key={item.id} className="prem-summary-row">
+              <span className="prem-summary-row-label">
+                {item.name} ({item.pack_size_kg || 1}kg) × {item.quantity}
+              </span>
+              <span className="prem-summary-row-value">
+                ₹{(item.price * item.quantity).toFixed(2)}
+              </span>
+            </div>
+          ))}
 
-          <label>Delivery Address</label>
-          <textarea
-            value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
-            placeholder="House / Street / Village / Taluka / District / Pincode"
-            required
-          />
+          <div className="prem-summary-total" style={{ marginTop: 'var(--s-3)' }}>
+            <span className="prem-summary-total-label">Subtotal</span>
+            <span className="prem-summary-row-value">₹{subtotal.toFixed(2)}</span>
+          </div>
 
-          <button
-            type="submit"
-            className="checkout-btn"
-            disabled={submitting || pincodeServiceable === false}
-          >
-            {submitting ? 'Placing Order...' : `Place Order (₹${finalTotal.toFixed(2)})`}
-          </button>
+          <div className="prem-summary-row">
+            <span className="prem-summary-row-label">GST (included)</span>
+            <span className="prem-summary-row-value">₹{gstTotal.toFixed(2)}</span>
+          </div>
 
-          <p className="checkout-cod-note">
-            💵 Cash on Delivery · No online payment required
-          </p>
-        </form>
+          <div className="prem-summary-row">
+            <span className="prem-summary-row-label">Transport</span>
+            <span className="prem-summary-row-value">On Actuals</span>
+          </div>
+
+          <div className="prem-summary-total" style={{ marginTop: 'var(--s-4)' }}>
+            <span className="prem-summary-total-label">Total</span>
+            <span className="prem-summary-total-value">₹{subtotal.toFixed(2)}</span>
+          </div>
+
+          <div className="prem-summary-note" style={{ marginTop: 'var(--s-3)' }}>
+            <span>
+              <strong>{isCredit ? 'Payment: Credit' : 'Payment: Advance'}</strong>
+              {isCredit ? ' · Invoice on dispatch' : ' · UTR reference recorded on order'}
+            </span>
+          </div>
+        </aside>
       </div>
     </div>
   );

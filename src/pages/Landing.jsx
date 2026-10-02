@@ -1,36 +1,35 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { useCart } from '../context/CartContext';
 import ThreeDotMenu from '../components/ThreeDotMenu';
+import KolhapurMap from '../components/KolhapurMap';
+
+const DISTRICTS_SERVED = [
+  'Kolhapur', 'Sangli', 'Satara', 'Solapur', 'Belagavi', 'Pune',
+];
 
 export default function Landing() {
-  const [products, setProducts] = useState([]);
-  const { addToCart, openDrawer } = useCart();
-  const navigate = useNavigate();
+  const [stats, setStats] = useState({ products: 0, retailers: 0, orders: 0 });
 
   useEffect(() => {
-    async function fetchFeatured() {
-      const { data } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_available', true)
-        .gt('stock', 0)
-        .limit(4);
-      setProducts(data || []);
+    async function fetchStats() {
+      const [prodRes, retRes, ordRes] = await Promise.all([
+        supabase.from('products').select('id', { count: 'exact', head: true }).eq('is_available', true),
+        supabase.from('retailers').select('id', { count: 'exact', head: true }).eq('status', 'Approved'),
+        supabase.from('orders').select('id', { count: 'exact', head: true }),
+      ]);
+      setStats({
+        products: prodRes.count || 0,
+        retailers: retRes.count || 0,
+        orders: ordRes.count || 0,
+      });
     }
-    fetchFeatured();
+    fetchStats();
   }, []);
-
-  const handleAddToCart = (e, product) => {
-    e.preventDefault();
-    addToCart(product);
-    openDrawer();
-  };
 
   return (
     <div className="landing">
-      {/* Top Bar - Minimal */}
+      {/* TOP BAR */}
       <header className="landing-topbar">
         <ThreeDotMenu variant="landing" />
         <Link to="/" className="landing-logo">
@@ -40,9 +39,9 @@ export default function Landing() {
           </span>
         </Link>
         <nav className="landing-nav">
-          <Link to="/shop">Shop</Link>
-          <Link to="/bulk-order">Bulk Orders</Link>
-          <Link to="/track">Track Order</Link>
+          <Link to="/products">Catalog</Link>
+          <Link to="/retailer-setup">Become a Retailer</Link>
+          <Link to="/login">Retailer Login</Link>
         </nav>
       </header>
 
@@ -57,79 +56,63 @@ export default function Landing() {
         <div className="hero-landing-inner">
           <div className="hero-eyebrow">
             <span className="eyebrow-line"></span>
-            <span>ESTABLISHED IN KOLHAPUR</span>
+            <span>WHOLESALE FOR RETAILERS</span>
             <span className="eyebrow-line"></span>
           </div>
 
           <h1 className="hero-landing-title">
-            <span className="hero-line">The <em>Real</em> Taste</span>
-            <span className="hero-line">of Kolhapur,</span>
-            <span className="hero-line">Fried Fresh <em>Daily.</em></span>
+            <span className="hero-line">Bulk Chips for</span>
+            <span className="hero-line">Your Store,</span>
+            <span className="hero-line">Delivered Fresh <em>Weekly.</em></span>
           </h1>
 
           <p className="hero-landing-sub">
-            Hand-cut banana and jackfruit chips, made in small batches with
-            coconut oil and traditional spice blends. No preservatives. No shortcuts.
+            We supply 1kg and 5kg packs of traditional Kolhapuri banana and
+            jackfruit chips to kirana stores, supermarkets, and distributors across
+            Maharashtra. FSSAI certified. GST invoices. Transport dispatch.
           </p>
 
           <div className="hero-landing-cta">
-            <Link to="/shop" className="btn-primary-landing">
-              <span>Explore the Collection</span>
+            <Link to="/retailer-setup" className="btn-primary-landing">
+              <span>Apply as Retailer</span>
               <span className="btn-arrow">→</span>
             </Link>
-            <Link to="/bulk-order" className="btn-ghost-landing">
-              <span>Bulk & Weddings</span>
+            <Link to="/products" className="btn-ghost-landing">
+              <span>View Wholesale Catalog</span>
             </Link>
           </div>
 
           <div className="hero-trust-row">
             <div className="trust-item">
+              <span className="trust-num">{stats.retailers || '25'}+</span>
+              <span className="trust-label">Retailers Served</span>
+            </div>
+            <div className="trust-divider"></div>
+            <div className="trust-item">
+              <span className="trust-num">6+</span>
+              <span className="trust-label">Districts Covered</span>
+            </div>
+            <div className="trust-divider"></div>
+            <div className="trust-item">
               <span className="trust-num">FSSAI</span>
               <span className="trust-label">Certified Kitchen</span>
             </div>
-            <div className="trust-divider"></div>
-            <div className="trust-item">
-              <span className="trust-num">100%</span>
-              <span className="trust-label">Natural Ingredients</span>
-            </div>
-            <div className="trust-divider"></div>
-            <div className="trust-item">
-              <span className="trust-num">24hr</span>
-              <span className="trust-label">Kolhapur Delivery</span>
-            </div>
           </div>
         </div>
-
-        {/* Floating product images */}
-        {products[0] && (
-          <div className="hero-float hero-float-1">
-            <img src={products[0].image_url} alt={products[0].name} />
-          </div>
-        )}
-        {products[1] && (
-          <div className="hero-float hero-float-2">
-            <img src={products[1].image_url} alt={products[1].name} />
-          </div>
-        )}
-        {products[2] && (
-          <div className="hero-float hero-float-3">
-            <img src={products[2].image_url} alt={products[2].name} />
-          </div>
-        )}
       </section>
 
-      {/* MARQUEE STRIP */}
+      {/* MARQUEE */}
       <div className="landing-strip">
         <div className="strip-track">
           {[1, 2, 3].map((i) => (
             <div key={i} className="strip-group">
-              <span>Hand-Cut Daily</span>
+              <span>Wholesale Rates</span>
               <span className="strip-dot"></span>
-              <span>No Preservatives</span>
+              <span>1kg & 5kg Packs</span>
               <span className="strip-dot"></span>
-              <span>Coconut Oil Fried</span>
+              <span>GST Invoices</span>
               <span className="strip-dot"></span>
-              <span>Delivered Fresh</span>
+              <span>Transport Dispatch</span>
               <span className="strip-dot"></span>
               <span>Made in Kolhapur</span>
               <span className="strip-dot"></span>
@@ -138,175 +121,212 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* STORY SECTION */}
+      {/* WHO WE SERVE */}
       <section className="story-section">
         <div className="story-grid">
           <div className="story-text">
-            <span className="section-kicker">Our Story</span>
+            <span className="section-kicker">WHO WE SERVE</span>
             <h2 className="section-title-landing">
-              Three generations of <em>one recipe</em>.
+              Built for <em>retailers</em> like you.
             </h2>
             <p>
-              Mahalaxmi Krushi Prakriya Udyog began in a small home kitchen in
-              Gavase, Ajara — with nothing but a cast-iron wok, a family recipe,
-              and a promise to never compromise.
+              Whether you run a small kirana shop or supply supermarkets across
+              multiple districts, we deliver consistently fresh chips with reliable
+              packaging and honest pricing.
             </p>
-            <p>
-              Today, we still make every batch the same way. Hand-cut bananas.
-              Fresh coconut oil. And the same spice blend our grandfather
-              perfected over forty years ago.
-            </p>
-            <Link to="/shop" className="btn-text-landing">
-              Taste the tradition <span>→</span>
-            </Link>
+            <ul className="prem-landing-list">
+              <li>Kirana & general stores</li>
+              <li>Supermarkets & marts</li>
+              <li>Distributors & wholesalers</li>
+              <li>Namkeen speciality shops</li>
+              <li>Gift & festive pack retailers</li>
+            </ul>
           </div>
           <div className="story-visual">
-            {products[3] ? (
-              <img src={products[3].image_url} alt="Traditional chips" />
-            ) : (
-              <div className="story-placeholder"></div>
-            )}
-            <div className="story-badge">
-              <div className="story-badge-num">18+</div>
-              <div className="story-badge-text">Years of<br />Experience</div>
+            <div className="story-placeholder-b2b">
+              <div className="story-badge">
+                <div className="story-badge-num">18+</div>
+                <div className="story-badge-text">Years of<br />Manufacturing</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FEATURED PRODUCTS */}
+      {/* WHAT YOU GET */}
       <section className="featured-section">
         <div className="section-header-row">
           <div>
-            <span className="section-kicker">Featured</span>
+            <span className="section-kicker">WHAT YOU GET</span>
             <h2 className="section-title-landing">
-              Our <em>Signature</em> Batch
+              Built for <em>business.</em>
             </h2>
           </div>
-          <Link to="/shop" className="btn-text-landing">
-            View all products <span>→</span>
-          </Link>
         </div>
 
-        <div className="featured-grid-landing">
-          {products.map((product) => (
-            <article key={product.id} className="featured-card-landing">
-              <Link to="/shop" className="featured-media">
-                <img src={product.image_url} alt={product.name} />
-              </Link>
-              <div className="featured-body">
-                <span className="featured-cat">{product.category}</span>
-                <h3>{product.name}</h3>
-                <p className="featured-weight">{product.weight}</p>
-                <div className="featured-foot">
-                  <span className="featured-price">₹{product.price}</span>
-                  <button
-                    className="featured-add"
-                    onClick={(e) => handleAddToCart(e, product)}
-                  >
-                    Add to cart
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
+        <div className="prem-landing-grid">
+          <div className="prem-landing-card">
+            <div className="prem-landing-num">01</div>
+            <h3>Wholesale Pricing</h3>
+            <p>
+              Transparent rates on 1kg and 5kg packs. No hidden margins. Rates
+              locked per season.
+            </p>
+          </div>
+          <div className="prem-landing-card">
+            <div className="prem-landing-num">02</div>
+            <h3>GST Invoices</h3>
+            <p>
+              Every order comes with a proper GST invoice (HSN 2005). Use it for
+              your own input credit and clean accounting.
+            </p>
+          </div>
+          <div className="prem-landing-card">
+            <div className="prem-landing-num">03</div>
+            <h3>Transport Dispatch</h3>
+            <p>
+              We dispatch via your preferred transporter or ours. LR number shared
+              on WhatsApp for tracking.
+            </p>
+          </div>
+          <div className="prem-landing-card">
+            <div className="prem-landing-num">04</div>
+            <h3>Credit Terms</h3>
+            <p>
+              Regular retailers can avail 15 or 30 day credit terms after a few
+              confirmed orders. Advance payment for new accounts.
+            </p>
+          </div>
+          <div className="prem-landing-card">
+            <div className="prem-landing-num">05</div>
+            <h3>Fresh from Kolhapur</h3>
+            <p>
+              Fried in small batches, sealed same day. Every pack has a fried-on
+              date. No preservatives, no shortcuts.
+            </p>
+          </div>
+          <div className="prem-landing-card">
+            <div className="prem-landing-num">06</div>
+            <h3>Dedicated Support</h3>
+            <p>
+              Direct WhatsApp access to our team. Reorder in one click. Same-day
+              response on all queries.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* WHY US */}
+      {/* HOW IT WORKS */}
       <section className="why-section">
         <div className="why-inner">
-          <span className="section-kicker section-kicker-light">Why Mahalaxmi</span>
+          <span className="section-kicker section-kicker-light">HOW IT WORKS</span>
           <h2 className="section-title-landing section-title-light">
-            Three reasons families keep coming back.
+            From enquiry to dispatch in <em>4 steps.</em>
           </h2>
 
-          <div className="why-grid">
-            <div className="why-card">
-              <div className="why-num">01</div>
-              <h3>Fried Fresh, Every Morning</h3>
-              <p>
-                Every batch is fried the same day it ships. If it doesn't taste
-                like it just came out of the wok, we don't send it.
-              </p>
+          <div className="prem-landing-steps">
+            <div className="prem-landing-step">
+              <div className="prem-landing-step-num">01</div>
+              <h3>Apply</h3>
+              <p>Fill the retailer form with your shop and GST details.</p>
             </div>
-            <div className="why-card">
-              <div className="why-num">02</div>
-              <h3>Nothing Artificial. Ever.</h3>
-              <p>
-                No preservatives, no artificial flavors, no MSG. Just bananas,
-                jackfruit, coconut oil, salt, and time.
-              </p>
+            <div className="prem-landing-step">
+              <div className="prem-landing-step-num">02</div>
+              <h3>Get Approved</h3>
+              <p>We review your application within 24 hours.</p>
             </div>
-            <div className="why-card">
-              <div className="why-num">03</div>
-              <h3>Made for Your Family</h3>
-              <p>
-                Our chips are made to be shared. That's why every pack is
-                sealed for freshness and delivered within 24 hours in Kolhapur.
-              </p>
+            <div className="prem-landing-step">
+              <div className="prem-landing-step-num">03</div>
+              <h3>Place Order</h3>
+              <p>Pick products, confirm address, and submit.</p>
+            </div>
+            <div className="prem-landing-step">
+              <div className="prem-landing-step-num">04</div>
+              <h3>Receive Stock</h3>
+              <p>We dispatch and share LR number for tracking.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* BULK CTA */}
+      {/* DISTRICTS SERVED */}
+      <section className="prem-landing-districts">
+        <div className="prem-landing-districts-inner">
+          <span className="section-kicker">CURRENTLY SERVING</span>
+          <h2 className="section-title-landing">
+            Across <em>Maharashtra</em> &amp; beyond.
+          </h2>
+          <div className="prem-landing-district-list">
+            {DISTRICTS_SERVED.map((d) => (
+              <span key={d} className="prem-landing-district-chip">{d}</span>
+            ))}
+          </div>
+          <p className="prem-landing-districts-note">
+            Not in the list? <Link to="/bulk-order">Contact us</Link> — we are
+            expanding to new districts every month.
+          </p>
+        </div>
+      </section>
+
+      {/* MAP */}
+      <KolhapurMap />
+
+      {/* CTA */}
       <section className="bulk-cta-landing">
         <div className="bulk-cta-inner">
           <div className="bulk-cta-text">
-            <span className="section-kicker section-kicker-light">For Weddings & Events</span>
+            <span className="section-kicker section-kicker-light">READY TO STOCK?</span>
             <h2 className="section-title-landing section-title-light">
-              Ordering in bulk? <em>We've got you.</em>
+              Open your wholesale account <em>today.</em>
             </h2>
             <p>
-              Weddings, corporate events, festivals, and resellers —
-              we offer custom packaging, advance scheduling, and dedicated
-              support for orders above 10kg.
+              Fill a short form, get approved in 24 hours, and start ordering.
+              Minimum order just 10kg.
             </p>
-            <Link to="/bulk-order" className="btn-primary-landing btn-primary-light">
-              <span>Request a Bulk Quote</span>
+            <Link to="/retailer-setup" className="btn-primary-landing btn-primary-light">
+              <span>Apply as Retailer</span>
               <span className="btn-arrow">→</span>
             </Link>
           </div>
           <div className="bulk-cta-visual">
             <div className="bulk-stat">
-              <span className="bulk-stat-num">50kg+</span>
-              <span className="bulk-stat-label">Minimum for Bulk</span>
+              <span className="bulk-stat-num">10kg</span>
+              <span className="bulk-stat-label">Minimum Order</span>
+            </div>
+            <div className="bulk-stat">
+              <span className="bulk-stat-num">24hr</span>
+              <span className="bulk-stat-label">Approval Time</span>
             </div>
             <div className="bulk-stat">
               <span className="bulk-stat-num">48hr</span>
-              <span className="bulk-stat-label">Advance Notice</span>
-            </div>
-            <div className="bulk-stat">
-              <span className="bulk-stat-num">Pan-India</span>
-              <span className="bulk-stat-label">Shipping Available</span>
+              <span className="bulk-stat-label">Dispatch Time</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* VISIT US */}
+      {/* CONTACT */}
       <section className="visit-section">
         <div className="visit-grid">
           <div className="visit-item">
-            <span className="visit-label">Visit the Kitchen</span>
+            <span className="visit-label">Kitchen Address</span>
             <p>A/p. Gavase, Tal. Ajara<br />Dist. Kolhapur, MH 416505</p>
           </div>
           <div className="visit-item">
-            <span className="visit-label">Call or WhatsApp</span>
+            <span className="visit-label">Call / WhatsApp</span>
             <p>
               <a href="tel:+917774982725">+91 77749 82725</a><br />
               <a href="tel:+919168843668">+91 91688 43668</a>
             </p>
           </div>
           <div className="visit-item">
-            <span className="visit-label">Open Hours</span>
+            <span className="visit-label">Business Hours</span>
             <p>Monday – Saturday<br />9:00 AM – 8:00 PM</p>
           </div>
         </div>
       </section>
 
-      {/* BACK TO TOP */}
+      {/* FOOTER */}
       <button
         className="back-to-top"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -315,37 +335,26 @@ export default function Landing() {
         <span className="btt-label">Back to Top</span>
       </button>
 
-      {/* FULL FOOTER */}
       <footer className="site-footer">
         <div className="footer-top">
           <div className="footer-cols">
-            {/* Column 1: Shop */}
             <div className="footer-col">
-              <h4 className="footer-col-title">Shop</h4>
+              <h4 className="footer-col-title">Wholesale</h4>
               <ul>
-                <li><Link to="/shop">All Products</Link></li>
-                <li><Link to="/products">Banana Chips</Link></li>
-                <li><Link to="/products">Jackfruit Chips</Link></li>
-                <li><Link to="/products">Combo Packs</Link></li>
-                <li><Link to="/shop">Best Sellers</Link></li>
-                <li><Link to="/shop">New Arrivals</Link></li>
-              </ul>
-            </div>
-
-            {/* Column 2: Orders */}
-            <div className="footer-col">
-              <h4 className="footer-col-title">Orders & Delivery</h4>
-              <ul>
-                <li><Link to="/track">Track Your Order</Link></li>
-                <li><Link to="/my-orders">My Orders</Link></li>
+                <li><Link to="/products">Catalog</Link></li>
+                <li><Link to="/retailer-setup">Become a Retailer</Link></li>
                 <li><Link to="/bulk-order">Bulk Enquiry</Link></li>
-                <li><Link to="/cart">Shopping Cart</Link></li>
-                <li><Link to="/checkout">Checkout</Link></li>
-                <li><Link to="/rewards">My Rewards</Link></li>
+                <li><Link to="/login">Retailer Login</Link></li>
               </ul>
             </div>
-
-            {/* Column 3: Company */}
+            <div className="footer-col">
+              <h4 className="footer-col-title">Orders</h4>
+              <ul>
+                <li><Link to="/cart">Order Sheet</Link></li>
+                <li><Link to="/my-orders">My Orders</Link></li>
+                <li><Link to="/track">Track Order</Link></li>
+              </ul>
+            </div>
             <div className="footer-col">
               <h4 className="footer-col-title">Company</h4>
               <ul>
@@ -353,27 +362,19 @@ export default function Landing() {
                 <li><Link to="/">Kitchen Location</Link></li>
                 <li><Link to="/">FSSAI Certification</Link></li>
                 <li><Link to="/">Wholesale Enquiry</Link></li>
-                <li><Link to="/">Careers</Link></li>
-                <li><Link to="/">Press</Link></li>
               </ul>
             </div>
-
-            {/* Column 4: Support */}
             <div className="footer-col">
-              <h4 className="footer-col-title">Help & Support</h4>
+              <h4 className="footer-col-title">Contact</h4>
               <ul>
                 <li><a href="tel:+917774982725">Call: 7774982725</a></li>
                 <li><a href="tel:+919168843668">Call: 9168843668</a></li>
                 <li><a href="https://wa.me/917774982725" target="_blank" rel="noopener noreferrer">WhatsApp Support</a></li>
-                <li><Link to="/">Shipping Policy</Link></li>
-                <li><Link to="/">Return & Refunds</Link></li>
-                <li><Link to="/">Contact Us</Link></li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* BRAND BAR */}
         <div className="footer-brand-bar">
           <div className="footer-brand-inner">
             <div className="footer-brand-lockup">
@@ -383,23 +384,20 @@ export default function Landing() {
                 <div className="footer-brand-sub">KRUSHI PRAKRIYA UDYOG</div>
               </div>
             </div>
-
             <div className="footer-badges">
               <span className="footer-badge">FSSAI 21519267000110</span>
-              <span className="footer-badge">100% Natural</span>
+              <span className="footer-badge">Wholesale Only</span>
               <span className="footer-badge">Made in Kolhapur</span>
             </div>
           </div>
         </div>
 
-        {/* LEGAL BAR */}
         <div className="footer-legal">
           <div className="footer-legal-inner">
             <div className="footer-legal-links">
-              <Link to="/">Conditions of Use</Link>
               <Link to="/">Privacy Notice</Link>
-              <Link to="/">Interest-Based Ads</Link>
               <Link to="/">Terms & Conditions</Link>
+              <Link to="/">GST Policy</Link>
             </div>
             <div className="footer-legal-copy">
               © {new Date().getFullYear()} Mahalaxmi Krushi Prakriya Udyog. All rights reserved.
