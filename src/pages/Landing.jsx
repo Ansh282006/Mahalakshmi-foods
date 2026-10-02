@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import ThreeDotMenu from '../components/ThreeDotMenu';
-import KolhapurMap from '../components/KolhapurMap';
 
 const DISTRICTS_SERVED = [
   'Kolhapur', 'Sangli', 'Satara', 'Solapur', 'Belagavi', 'Pune',
@@ -269,8 +268,6 @@ export default function Landing() {
       </section>
 
       {/* MAP */}
-      <KolhapurMap />
-
       {/* CTA */}
       <section className="bulk-cta-landing">
         <div className="bulk-cta-inner">
