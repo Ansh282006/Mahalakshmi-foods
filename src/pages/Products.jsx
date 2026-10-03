@@ -219,7 +219,7 @@ export default function Products() {
                     </button>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #0F0F0F', height: '44px', marginTop: 'auto' }}>
-                      <button onClick={() => updateQuantity(product.id, cartQty - 1)} style={{ width: '44px', height: '100%', background: 'transparent', border: 'none', fontSize: '1.15rem', cursor: 'pointer' }}>−</button>
+                      <button onClick={() => updateQuantity(product.id, cartQty - 1)} style={{ width: '44px', height: '100%', background: 'transparent', border: 'none', fontSize: '1.15rem', cursor: 'pointer' }}>âˆ’</button>
                       <span style={{ flex: 1, textAlign: 'center', fontWeight: 700 }}>{cartQty}</span>
                       <button onClick={() => updateQuantity(product.id, cartQty + 1)} style={{ width: '44px', height: '100%', background: 'transparent', border: 'none', fontSize: '1.15rem', cursor: 'pointer' }}>+</button>
                     </div>
@@ -237,7 +237,7 @@ export default function Products() {
             <div>
               <span style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '2px', color: '#C9A227', textTransform: 'uppercase' }}>Order Sheet</span>
               <strong style={{ fontFamily: 'Fraunces, serif', fontSize: '1.15rem' }}>
-                {cart.length} items · {totalKg} kg · ₹{cart.reduce((s, i) => s + i.price * i.quantity, 0).toFixed(0)}
+                {cart.length} items Â· {totalKg} kg Â· ₹{cart.reduce((s, i) => s + i.price * i.quantity, 0).toFixed(0)}
               </strong>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

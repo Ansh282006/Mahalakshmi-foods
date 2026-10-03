@@ -15,7 +15,7 @@ export default function Home() {
   useSEO({
     title: 'Mahalaxmi Chips — Wholesale Chips for Retailers',
     description:
-      'Wholesale Kolhapuri chips for kirana stores, supermarkets, and distributors. 1kg and 5kg packs. FSSAI certified. GST invoices. Pan-Maharashtra dispatch.',
+      'Wholesale Kolhapuri chips for kirana stores, supermarkets, and distributors. 1kg and 5kg packs. FSSAI certified. GST invoices. Transport dispatch across Western Maharashtra.',
     structuredData: organizationSchema(),
   });
 
@@ -62,7 +62,7 @@ export default function Home() {
               </h1>
               <p className="prem-hero-sub">
                 We supply traditional Kolhapuri banana and jackfruit chips to
-                kirana stores, supermarkets, and distributors across Maharashtra.
+                kirana stores, supermarkets, and distributors across Western Maharashtra.
                 1kg and 5kg packs. FSSAI certified. GST invoices. Minimum order 10kg.
               </p>
 

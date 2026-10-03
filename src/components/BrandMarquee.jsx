@@ -1,4 +1,4 @@
-export default function BrandMarquee() {
+﻿export default function BrandMarquee() {
   const items = [
     'WHOLESALE ONLY',
     '1KG & 5KG PACKS',
@@ -7,7 +7,7 @@ export default function BrandMarquee() {
     'TRANSPORT DISPATCH',
     'MADE IN KOLHAPUR',
     'SINCE 2006',
-    'PAN-MAHARASHTRA DELIVERY',
+    'WESTERN MAHARASHTRA DISPATCH',
   ];
 
   return (

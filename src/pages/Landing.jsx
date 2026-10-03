@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 import ThreeDotMenu from '../components/ThreeDotMenu';
 
 const DISTRICTS_SERVED = [
-  'Kolhapur', 'Sangli', 'Satara', 'Solapur', 'Belagavi', 'Pune',
+  'Kolhapur', 'Sangli', 'Satara', 'Solapur',
 ];
 
 export default function Landing() {
@@ -88,7 +88,7 @@ export default function Landing() {
             </div>
             <div className="trust-divider"></div>
             <div className="trust-item">
-              <span className="trust-num">6+</span>
+              <span className="trust-num">4</span>
               <span className="trust-label">Districts Covered</span>
             </div>
             <div className="trust-divider"></div>
@@ -318,7 +318,7 @@ export default function Landing() {
           </div>
           <div className="visit-item">
             <span className="visit-label">Business Hours</span>
-            <p>Monday – Saturday<br />9:00 AM – 8:00 PM</p>
+            <p>Monday — Saturday<br />9:00 AM — 8:00 PM</p>
           </div>
         </div>
       </section>
@@ -328,7 +328,7 @@ export default function Landing() {
         className="back-to-top"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       >
-        <span className="btt-arrow">↑</span>
+        <span className="btt-arrow">â†‘</span>
         <span className="btt-label">Back to Top</span>
       </button>
 
@@ -397,10 +397,10 @@ export default function Landing() {
               <Link to="/">GST Policy</Link>
             </div>
             <div className="footer-legal-copy">
-              © {new Date().getFullYear()} Mahalaxmi Krushi Prakriya Udyog. All rights reserved.
+              Â© {new Date().getFullYear()} Mahalaxmi Krushi Prakriya Udyog. All rights reserved.
             </div>
             <div className="footer-legal-address">
-              A/p. Gavase, Tal. Ajara, Dist. Kolhapur, Maharashtra 416505 · India
+              A/p. Gavase, Tal. Ajara, Dist. Kolhapur, Maharashtra 416505 Â· India
             </div>
           </div>
         </div>
@@ -408,3 +408,4 @@ export default function Landing() {
     </div>
   );
 }
+
