@@ -5,6 +5,7 @@ import './tokens.css';
 import './i18n';
 import './index.css';
 import './mobile.css';
+import './mobile.css';
 import { AuthProvider } from './context/AuthContext';
 import App from './App.jsx';
 
@@ -32,3 +33,4 @@ createRoot(document.getElementById('root')).render(
     </AuthProvider>
   </StrictMode>
 );
+
