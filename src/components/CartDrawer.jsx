@@ -34,7 +34,7 @@ export default function CartDrawer() {
       <aside className={`cart-drawer ${isDrawerOpen ? 'open' : ''}`}>
         <div className="drawer-header">
           <div>
-            <h2>Your Cart</h2>
+            <h2>ORDER SHEET</h2>
             <p className="drawer-subtitle">
               {getItemCount()} {getItemCount() === 1 ? 'item' : 'items'}
             </p>
@@ -48,7 +48,7 @@ export default function CartDrawer() {
           {cart.length === 0 ? (
             <div className="drawer-empty">
               <div className="empty-icon">🛒</div>
-              <h3>Your cart is empty</h3>
+              <h3>ORDER SHEET is empty</h3>
               <p>Add some delicious chips to get started!</p>
               <button
                 className="drawer-shop-btn"
@@ -57,7 +57,7 @@ export default function CartDrawer() {
                   navigate('/products');
                 }}
               >
-                Browse Products
+                Browse Catalog
               </button>
             </div>
           ) : (
@@ -95,10 +95,10 @@ export default function CartDrawer() {
               <strong>₹{getTotal().toFixed(2)}</strong>
             </div>
             <button className="drawer-checkout-btn" onClick={handleCheckout}>
-              Proceed to Checkout →
+              Review Order →
             </button>
             <button className="drawer-continue-btn" onClick={closeDrawer}>
-              Continue Shopping
+              Continue Adding
             </button>
           </div>
         )}

@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCart } from '../context/CartContext';
@@ -107,9 +107,6 @@ export default function Sidebar({ isOpen, onClose }) {
                 <Link to="/my-orders" className={`sidebar-link ${isActive('/my-orders') ? 'active' : ''}`} onClick={onClose}>
                   {t('nav.myOrders')}
                 </Link>
-                <Link to="/rewards" className={`sidebar-link ${isActive('/rewards') ? 'active' : ''}`} onClick={onClose}>
-                  My Rewards
-                </Link>
               </>
             )}
 
@@ -165,10 +162,6 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
 
           <div className="sidebar-footer-stats">
-            <Link to="/wishlist" className="sidebar-stat" onClick={onClose}>
-              <span className="sidebar-stat-label">{t('nav.wishlist')}</span>
-              <span className="sidebar-stat-count">{wishlistCount}</span>
-            </Link>
             <Link to="/cart" className="sidebar-stat" onClick={onClose}>
               <span className="sidebar-stat-label">{t('nav.cart')}</span>
               <span className="sidebar-stat-count">{getItemCount()}</span>

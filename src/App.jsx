@@ -23,6 +23,7 @@ import AdminOrders from './pages/AdminOrders';
 import AdminProducts from './pages/AdminProducts';
 import AdminTeam from './pages/AdminTeam';
 import AdminRetailers from './pages/AdminRetailers';
+import AdminUsers from './pages/AdminUsers';
 
 import './App.css';
 import './landing.css';
@@ -62,7 +63,7 @@ function App() {
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/team" element={<AdminTeam />} />
           <Route path="/admin/retailers" element={<AdminRetailers />} />
-        </Routes>
+          <Route path="/admin/users" element={<AdminUsers />} />        </Routes>
       </BrowserRouter>
     </CartProvider>
   );
