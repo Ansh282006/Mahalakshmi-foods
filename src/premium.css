@@ -755,3 +755,134 @@ body.dark-mode .prem-empty-title { color: var(--cream-50); }
 body.dark-mode .prem-empty-text { color: rgba(254, 253, 251, 0.5); }
 body.dark-mode .prem-empty-btn { background: var(--gold-500); color: var(--forest-950); }
 body.dark-mode .prem-empty-btn:hover { background: var(--gold-400); }
+/* ============================================
+   BRAND MARQUEE V2 — MODERN B2B EDITION
+   ============================================ */
+.brand-marquee-v2 {
+  width: 100%;
+  background: var(--forest-950);
+  color: var(--cream-100);
+  padding: 22px 0;
+  overflow: hidden;
+  position: relative;
+  border-top: 1px solid rgba(201, 162, 39, 0.25);
+  border-bottom: 1px solid rgba(201, 162, 39, 0.25);
+}
+
+/* Fade edges for a soft, editorial look */
+.brand-marquee-v2::before,
+.brand-marquee-v2::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.brand-marquee-v2::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--forest-950) 0%, transparent 100%);
+}
+
+.brand-marquee-v2::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--forest-950) 0%, transparent 100%);
+}
+
+.marquee-v2-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marqueeV2Scroll 45s linear infinite;
+  will-change: transform;
+}
+
+.marquee-v2-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding-right: 0;
+}
+
+.marquee-v2-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 40px;
+  padding-right: 40px;
+}
+
+.marquee-v2-text {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 3px;
+  color: var(--cream-100);
+  text-transform: uppercase;
+  position: relative;
+}
+
+/* Small gold dot separator between items */
+.marquee-v2-sep {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--gold-500);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.brand-marquee-v2:hover .marquee-v2-track {
+  animation-play-state: paused;
+}
+
+.brand-marquee-v2:hover .marquee-v2-sep {
+  transform: scale(1.4);
+}
+
+@keyframes marqueeV2Scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-33.333%); }
+}
+
+/* Alternate words in gold for visual rhythm */
+.marquee-v2-item:nth-child(even) .marquee-v2-text {
+  color: var(--gold-400);
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .brand-marquee-v2 {
+    padding: 16px 0;
+  }
+  .marquee-v2-text {
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+  }
+  .marquee-v2-item {
+    gap: 24px;
+    padding-right: 24px;
+  }
+  .marquee-v2-sep {
+    width: 4px;
+    height: 4px;
+  }
+  .brand-marquee-v2::before,
+  .brand-marquee-v2::after {
+    width: 60px;
+  }
+}
+
+/* ── Dark mode ── */
+body.dark-mode .brand-marquee-v2 {
+  background: #03060b;
+  border-top-color: rgba(201, 162, 39, 0.4);
+  border-bottom-color: rgba(201, 162, 39, 0.4);
+}
+body.dark-mode .brand-marquee-v2::before {
+  background: linear-gradient(90deg, #03060b 0%, transparent 100%);
+}
+body.dark-mode .brand-marquee-v2::after {
+  background: linear-gradient(270deg, #03060b 0%, transparent 100%);
+}

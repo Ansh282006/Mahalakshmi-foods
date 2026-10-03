@@ -1,27 +1,27 @@
 export default function BrandMarquee() {
   const items = [
-    { text: 'महालक्ष्मी कृषी प्रक्रिया उद्योग', highlight: false },
-    { text: '★', highlight: true },
-    { text: '100% Natural Ingredients', highlight: false },
-    { text: '★', highlight: true },
-    { text: 'Freshly Fried Chips', highlight: false },
-    { text: '★', highlight: true },
-    { text: 'FSSAI Certified', highlight: false },
-    { text: '★', highlight: true },
-    { text: 'Made with Love in Kolhapur', highlight: false },
-    { text: '★', highlight: true },
+    'WHOLESALE ONLY',
+    '1KG & 5KG PACKS',
+    'FSSAI CERTIFIED',
+    'GST INVOICES',
+    'TRANSPORT DISPATCH',
+    'MADE IN KOLHAPUR',
+    'SINCE 2006',
+    'PAN-MAHARASHTRA DELIVERY',
   ];
 
   return (
-    <div className="brand-marquee">
-      <div className="marquee-track">
-        {[...items, ...items].map((item, i) => (
-          <span
-            key={i}
-            className={`marquee-item ${item.highlight ? 'marquee-star' : ''}`}
-          >
-            {item.text}
-          </span>
+    <div className="brand-marquee-v2">
+      <div className="marquee-v2-track">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="marquee-v2-group">
+            {items.map((item, idx) => (
+              <span key={idx} className="marquee-v2-item">
+                <span className="marquee-v2-text">{item}</span>
+                <span className="marquee-v2-sep" aria-hidden="true"></span>
+              </span>
+            ))}
+          </div>
         ))}
       </div>
     </div>
