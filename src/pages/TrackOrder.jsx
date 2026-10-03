@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
-import TrackOrderSkeleton from '../components/TrackOrderSkeleton';
 
-const STATUS_STEPS = ['Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered'];
+const STATUS_STEPS = ['Enquiry', 'Confirmed', 'Packed', 'Dispatched', 'Delivered'];
 
 export default function TrackOrder() {
   const [query, setQuery] = useState('');
@@ -45,18 +44,11 @@ export default function TrackOrder() {
     toast.success('Order code copied');
   };
 
-  const shareOnWhatsApp = (order) => {
-    const message = `Mahalaxmi Chips\n\nOrder Code: ${order.order_code}\nStatus: ${order.status}\nTotal: Rs. ${order.total_amount}\n\nTrack anytime at our website.`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-  };
-
   const callPartner = (phone) => { window.location.href = `tel:${phone}`; };
 
-  const formatDeliveryDate = (dateStr) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      weekday: 'short', day: 'numeric', month: 'short',
-    });
+  const shareOnWhatsApp = (order) => {
+    const message = `Mahalaxmi Chips\n\nOrder: ${order.order_code}\nStatus: ${order.status}\n${order.transporter_name ? `Transporter: ${order.transporter_name}\n` : ''}${order.transporter_lr ? `LR No: ${order.transporter_lr}\n` : ''}Total: Rs. ${order.total_amount}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   return (
@@ -68,8 +60,8 @@ export default function TrackOrder() {
             Where is <em>my order?</em>
           </h1>
           <p className="prem-hero-sub">
-            Enter your order code (like MF-2026-0001) or the phone number you used
-            at checkout to see live status.
+            Enter your order code (like MF-2026-0001) or the phone number used
+            on the order to see live status, transporter, and LR details.
           </p>
         </div>
       </section>
@@ -87,23 +79,19 @@ export default function TrackOrder() {
         </button>
       </form>
 
-      {loading && <TrackOrderSkeleton />}
+      {loading && (
+        <div className="prem-admin-loading" style={{ maxWidth: '820px', margin: '0 auto' }}>
+          <p>Looking for your order...</p>
+        </div>
+      )}
 
       {!loading && searched && orders.length === 0 && (
         <div className="prem-empty-cart">
-          <div className="prem-empty-icon">
-            <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-              <line x1="12" y1="22.08" x2="12" y2="12" />
-            </svg>
-          </div>
           <h2 className="prem-empty-cart-title">No order found</h2>
           <p className="prem-empty-cart-text">
-            Please double-check your order code or phone number. If you placed the
-            order recently, allow a minute for it to appear.
+            Please double-check your order code or phone number.
           </p>
-          <Link to="/shop" className="prem-btn-primary">Back to Shop</Link>
+          <Link to="/products" className="prem-btn-primary">Back to Catalog</Link>
         </div>
       )}
 
@@ -112,8 +100,7 @@ export default function TrackOrder() {
           {orders.map((order) => {
             const stepIdx = getStepIndex(order.status);
             const cancelled = isCancelled(order);
-            const hasPartner = !!order.delivery_partner_name;
-            const isOut = order.status === 'Out for Delivery';
+            const hasDispatch = !!order.transporter_name || !!order.transporter_lr;
 
             return (
               <article key={order.id} className="prem-track-card">
@@ -121,22 +108,23 @@ export default function TrackOrder() {
                   <div>
                     <div className="prem-track-head-code">{order.order_code}</div>
                     <div className="prem-track-head-date">
-                      Ordered {new Date(order.created_at).toLocaleDateString('en-IN', {
+                      Placed on {new Date(order.created_at).toLocaleDateString('en-IN', {
                         day: 'numeric', month: 'long', year: 'numeric',
                       })}
                     </div>
                   </div>
-                  <span className={`prem-order-status status-${order.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <span className={`prem-admin-badge ${order.status.toLowerCase().replace(/\s+/g, '-')}`}>
                     {order.status}
                   </span>
                 </header>
 
                 {cancelled && (
                   <div className="prem-track-cancelled">
-                    This order was cancelled. If this is unexpected, please contact us.
+                    This order was cancelled. Contact us at 7774982725 if you have questions.
                   </div>
                 )}
 
+                {/* TIMELINE */}
                 {!cancelled && (
                   <div className="prem-track-timeline">
                     {STATUS_STEPS.map((step, idx) => {
@@ -160,50 +148,50 @@ export default function TrackOrder() {
                   </div>
                 )}
 
-                {order.status === 'Delivered' && (
+                {/* DELIVERED BANNER */}
+                {order.status === 'Delivered' && order.delivered_at && (
                   <div className="prem-track-banner delivered">
                     <strong>Delivered</strong>
-                    <span>
-                      {order.delivered_at
-                        ? new Date(order.delivered_at).toLocaleString('en-IN')
-                        : 'Successfully delivered'}
-                    </span>
+                    <span>{new Date(order.delivered_at).toLocaleString('en-IN')}</span>
                   </div>
                 )}
 
-                {!cancelled && order.estimated_delivery && order.status !== 'Delivered' && (
-                  <div className="prem-track-banner eta">
-                    <strong>Estimated Delivery</strong>
-                    <span>{formatDeliveryDate(order.estimated_delivery)}</span>
-                  </div>
-                )}
-
-                {hasPartner && !cancelled && (
+                {/* DISPATCH INFO */}
+                {hasDispatch && !cancelled && (
                   <div className="prem-track-partner">
                     <div className="prem-track-partner-avatar">
-                      {(order.delivery_partner_name || 'D').charAt(0).toUpperCase()}
+                      {(order.transporter_name || 'T').charAt(0).toUpperCase()}
                     </div>
                     <div className="prem-track-partner-info">
-                      <span className="prem-track-partner-label">Delivery Partner</span>
-                      <strong>{order.delivery_partner_name}</strong>
-                      {order.delivery_partner_phone && (
-                        <span className="prem-track-partner-phone">{order.delivery_partner_phone}</span>
+                      <span className="prem-track-partner-label">Transporter</span>
+                      <strong>{order.transporter_name || 'Assigned on dispatch'}</strong>
+                      {order.transporter_lr && (
+                        <span className="prem-track-partner-phone">
+                          LR Number: <strong style={{ color: 'var(--charcoal-900)' }}>{order.transporter_lr}</strong>
+                        </span>
+                      )}
+                      {order.package_count && (
+                        <span className="prem-track-partner-phone">
+                          {order.package_count} package{order.package_count === 1 ? '' : 's'}
+                          {order.package_weight_kg && ` · ${order.package_weight_kg} kg total`}
+                        </span>
                       )}
                     </div>
-                    {order.delivery_partner_phone && isOut && (
+                    {order.transporter_name && (
                       <button
                         className="prem-track-partner-call"
-                        onClick={() => callPartner(order.delivery_partner_phone)}
+                        onClick={() => copyCode(order.transporter_lr || order.transporter_name)}
                       >
-                        Call
+                        Copy LR
                       </button>
                     )}
                   </div>
                 )}
 
+                {/* DETAILS */}
                 <div className="prem-track-details">
                   <div>
-                    <span className="prem-track-detail-label">Customer</span>
+                    <span className="prem-track-detail-label">Retailer</span>
                     <span className="prem-track-detail-value">{order.customer_name}</span>
                   </div>
                   <div>
@@ -214,18 +202,25 @@ export default function TrackOrder() {
                     <span className="prem-track-detail-label">Total</span>
                     <span className="prem-track-detail-value price">₹{order.total_amount}</span>
                   </div>
+                  <div>
+                    <span className="prem-track-detail-label">Payment</span>
+                    <span className="prem-track-detail-value">
+                      {order.payment_mode || 'Advance'} · {order.payment_status || 'Pending'}
+                    </span>
+                  </div>
                   <div className="full">
                     <span className="prem-track-detail-label">Delivery Address</span>
                     <span className="prem-track-detail-value">{order.customer_address}</span>
                   </div>
                 </div>
 
-                {order.status_history?.length > 0 && (
+                {/* STATUS HISTORY */}
+                {order.status_history && order.status_history.length > 0 && (
                   <div className="prem-track-history">
                     <h4 className="prem-track-history-title">Status Updates</h4>
                     {order.status_history.map((entry, i) => (
                       <div key={i} className="prem-track-history-row">
-                        <span className={`prem-track-history-dot status-${entry.status.toLowerCase().replace(/\s+/g, '-')}`} />
+                        <span className={`prem-track-history-dot ${entry.status.toLowerCase().replace(/\s+/g, '-')}`} />
                         <div>
                           <strong>{entry.status}</strong>
                           <span>
@@ -240,6 +235,7 @@ export default function TrackOrder() {
                   </div>
                 )}
 
+                {/* FOOTER */}
                 <footer className="prem-track-foot">
                   <button className="prem-track-copy" onClick={() => copyCode(order.order_code)}>
                     Copy Code
@@ -247,7 +243,7 @@ export default function TrackOrder() {
                   <button className="prem-track-wa" onClick={() => shareOnWhatsApp(order)}>
                     Share on WhatsApp
                   </button>
-                  <Link to="/shop" className="prem-track-continue">Continue Shopping</Link>
+                  <Link to="/products" className="prem-track-continue">Back to Catalog</Link>
                 </footer>
               </article>
             );

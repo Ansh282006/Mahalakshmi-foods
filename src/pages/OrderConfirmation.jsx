@@ -5,12 +5,20 @@ import { supabase } from '../supabaseClient';
 import { generateInvoice } from '../utils/invoice';
 import useCompanyInfo from '../hooks/useCompanyInfo';
 
+const BANK = {
+  account_name: 'Mahalaxmi Krushi Prakriya Udyog',
+  account_number: 'XXXXXXXXXXXX',
+  ifsc: 'XXXXXXXX',
+  bank_name: 'Bank Name',
+  upi_id: 'mahalaxmi@upi',
+};
+
 export default function OrderConfirmation() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);
-  const company = useCompanyInfo();
   const [loading, setLoading] = useState(true);
+  const company = useCompanyInfo();
 
   useEffect(() => {
     async function fetchOrder() {
@@ -29,7 +37,7 @@ export default function OrderConfirmation() {
 
       const { data: itemData } = await supabase
         .from('order_items')
-        .select('*, products(name, weight, image_url)')
+        .select('*, products(name, pack_size_kg, hsn_code, gst_percent, image_url)')
         .eq('order_id', orderId);
       setItems(itemData || []);
       setLoading(false);
@@ -37,23 +45,29 @@ export default function OrderConfirmation() {
     fetchOrder();
   }, [orderId]);
 
-  const copyToClipboard = () => {
-    if (!order?.order_code) return;
-    navigator.clipboard.writeText(order.order_code);
-    toast.success('Order code copied');
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied');
   };
 
   const shareOnWhatsApp = () => {
     if (!order) return;
-    const message = `Mahalaxmi Chips\n\nOrder Code: ${order.order_code}\nTotal: Rs. ${order.total_amount}\n\nThank you for your order!`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    const msg = `Mahalaxmi Chips\n\nOrder Code: ${order.order_code}\nTotal: ₹${order.total_amount}\n\nThank you for your order. We will confirm shortly.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   };
+
+  const callUs = (phone) => { window.location.href = `tel:${phone}`; };
+
+  const totalKg = items.reduce(
+    (sum, item) => sum + (item.products?.pack_size_kg || 1) * item.quantity,
+    0
+  );
 
   if (loading) {
     return (
       <div className="prem-page">
         <div className="prem-empty-cart">
-          <p className="prem-empty-cart-text">Loading your order...</p>
+          <p className="prem-empty-cart-text">Loading order...</p>
         </div>
       </div>
     );
@@ -64,16 +78,14 @@ export default function OrderConfirmation() {
       <div className="prem-page">
         <div className="prem-empty-cart">
           <h2 className="prem-empty-cart-title">Order not found</h2>
-          <p className="prem-empty-cart-text">
-            We could not find this order.
-          </p>
-          <Link to="/track" className="prem-btn-primary">
-            Track an Order
-          </Link>
+          <Link to="/products" className="prem-btn-primary">Back to Catalog</Link>
         </div>
       </div>
     );
   }
+
+  const isCredit = order.payment_mode === 'Credit';
+  const isAdvance = !isCredit;
 
   return (
     <div className="prem-page">
@@ -85,78 +97,159 @@ export default function OrderConfirmation() {
             </svg>
           </div>
           <h1 className="prem-confirm-title">
-            Order <em>Confirmed.</em>
+            Order <em>Received.</em>
           </h1>
           <p className="prem-confirm-sub">
             Thank you, <strong>{order.customer_name}</strong>. We have received your
-            order and will contact you on <strong>{order.customer_phone}</strong> shortly.
+            wholesale order and will confirm it on WhatsApp within 4 hours.
           </p>
         </div>
 
-        {/* Order code */}
+        {/* ORDER CODE */}
         <div className="prem-order-code">
-          <div className="prem-order-code-label">Your Order Code</div>
+          <div className="prem-order-code-label">Order Code</div>
           <div className="prem-order-code-value">{order.order_code}</div>
           <p className="prem-order-code-hint">
-            Save this code to track your order anytime.
+            Save this code to track your order status anytime.
           </p>
-          <button className="prem-order-code-btn" onClick={copyToClipboard}>
+          <button className="prem-order-code-btn" onClick={() => copyToClipboard(order.order_code)}>
             Copy Code
           </button>
         </div>
 
-        {/* Details */}
+        {/* ORDER SUMMARY */}
         <div className="prem-confirm-details">
           <div className="prem-confirm-row">
             <span className="prem-confirm-row-label">Total Amount</span>
             <span className="prem-confirm-row-value price">₹{order.total_amount}</span>
           </div>
           <div className="prem-confirm-row">
+            <span className="prem-confirm-row-label">Total Volume</span>
+            <span className="prem-confirm-row-value">{totalKg} kg</span>
+          </div>
+          <div className="prem-confirm-row">
             <span className="prem-confirm-row-label">Status</span>
             <span className="prem-confirm-row-value status">{order.status}</span>
+          </div>
+          <div className="prem-confirm-row">
+            <span className="prem-confirm-row-label">Payment Mode</span>
+            <span className="prem-confirm-row-value">{order.payment_mode || 'Advance'}</span>
           </div>
           <div className="prem-confirm-row">
             <span className="prem-confirm-row-label">Delivery Address</span>
             <span className="prem-confirm-row-value">{order.customer_address}</span>
           </div>
-          <div className="prem-confirm-row">
-            <span className="prem-confirm-row-label">Payment</span>
-            <span className="prem-confirm-row-value">Cash on Delivery</span>
-          </div>
         </div>
 
-        {/* Actions */}
-        <div className="prem-confirm-actions">
-          <button
-            className="prem-btn-primary prem-btn-gold"
-            onClick={() => generateInvoice(order, items, company)}
-          >
+        {/* ADVANCE PAYMENT INSTRUCTIONS */}
+        {isAdvance && (
+          <div className="prem-b2b-bank" style={{ marginBottom: 'var(--s-4)' }}>
+            <div className="prem-b2b-bank-head">
+              <span className="prem-kicker">NEXT STEP</span>
+              <h3>Complete Advance Payment</h3>
+              <p>
+                Please transfer ₹{order.total_amount} to the account below and
+                share the UTR/reference on WhatsApp. We will dispatch once payment
+                is received.
+              </p>
+            </div>
+
+            <div className="prem-b2b-bank-grid">
+              <div className="prem-b2b-bank-row">
+                <span>Account Name</span>
+                <strong>{BANK.account_name}</strong>
+              </div>
+              <div className="prem-b2b-bank-row">
+                <span>Account Number</span>
+                <strong>{BANK.account_number}</strong>
+              </div>
+              <div className="prem-b2b-bank-row">
+                <span>IFSC</span>
+                <strong>{BANK.ifsc}</strong>
+              </div>
+              <div className="prem-b2b-bank-row">
+                <span>Bank</span>
+                <strong>{BANK.bank_name}</strong>
+              </div>
+              <div className="prem-b2b-bank-row">
+                <span>UPI ID</span>
+                <strong>{BANK.upi_id}</strong>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 'var(--s-3)' }}>
+              <button
+                className="prem-btn-primary"
+                style={{ width: '100%', padding: '14px' }}
+                onClick={() => copyToClipboard(`${BANK.bank_name} · A/c: ${BANK.account_number} · IFSC: ${BANK.ifsc} · UPI: ${BANK.upi_id}`)}
+              >
+                Copy Bank Details
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isCredit && (
+          <div className="prem-cod-note" style={{ marginBottom: 'var(--s-4)' }}>
+            <div>
+              <strong>Credit Account</strong>
+              <span>
+                This order will be added to your credit account. Invoice will be
+                raised on dispatch. Payment due as per your agreed terms.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ITEMS TABLE */}
+        <section className="prem-checkout-section">
+          <h2 className="prem-checkout-section-title">
+            <span className="prem-checkout-section-num">ITEMS</span>
+            What You Ordered
+          </h2>
+          <div className="prem-admin-table-wrap">
+            <table className="prem-admin-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Pack</th>
+                  <th>Qty</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.products?.name || 'Product'}</td>
+                    <td>{item.products?.pack_size_kg || 1} kg</td>
+                    <td>× {item.quantity}</td>
+                    <td className="revenue-cell">₹{(item.price_at_time * item.quantity).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* ACTIONS */}
+        <div className="prem-confirm-actions" style={{ marginTop: 'var(--s-5)' }}>
+          <button className="prem-btn-primary prem-btn-gold" onClick={() => generateInvoice(order, items, company)}>
             Download Invoice
           </button>
-          <button className="prem-btn-outline" onClick={shareOnWhatsApp}>
+          <button className="prem-btn-primary" onClick={shareOnWhatsApp}>
             Share on WhatsApp
           </button>
-          <Link to="/track" className="prem-btn-outline">
-            Track Order
+          <button className="prem-btn-outline" onClick={() => callUs('7774982725')}>
+            Call Us
+          </button>
+          <Link to="/my-orders" className="prem-btn-outline">
+            My Orders
           </Link>
         </div>
 
-        <div style={{ marginTop: 'var(--s-5)', textAlign: 'center' }}>
-          <Link to="/shop" className="btn-text-landing" style={{ color: 'var(--forest-700)', borderBottomColor: 'var(--forest-700)' }}>
-            Continue Shopping →
-          </Link>
-        </div>
-
-        <p style={{
-          textAlign: 'center',
-          fontSize: '0.82rem',
-          color: 'var(--charcoal-500)',
-          marginTop: 'var(--s-5)',
-          paddingTop: 'var(--s-4)',
-          borderTop: '1px solid var(--cream-300)',
-          lineHeight: 1.6,
-        }}>
-          Questions? Call us at <strong style={{ color: 'var(--charcoal-900)' }}>7774982725</strong> or <strong style={{ color: 'var(--charcoal-900)' }}>9168843668</strong>
+        <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--charcoal-500)', marginTop: 'var(--s-5)', paddingTop: 'var(--s-4)', borderTop: '1px solid var(--cream-300)', lineHeight: 1.7 }}>
+          Our team will confirm your order on WhatsApp within 4 hours.<br />
+          For urgent queries, call us at <strong style={{ color: 'var(--charcoal-900)' }}>7774982725</strong> or <strong style={{ color: 'var(--charcoal-900)' }}>9168843668</strong>.
         </p>
       </div>
     </div>
