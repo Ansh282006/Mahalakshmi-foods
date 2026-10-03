@@ -1,9 +1,10 @@
-import { StrictMode } from 'react';
+﻿import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Toaster } from 'react-hot-toast';
 import './tokens.css';
 import './i18n';
 import './index.css';
+import './mobile.css';
 import { AuthProvider } from './context/AuthContext';
 import App from './App.jsx';
 
@@ -23,6 +24,7 @@ createRoot(document.getElementById('root')).render(
             fontSize: '0.92rem',
             fontWeight: '600',
             boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
+            maxWidth: 'calc(100vw - 32px)',
           },
           success: { iconTheme: { primary: '#14513E', secondary: '#FEFDFB' } },
         }}
